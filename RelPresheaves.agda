@@ -73,22 +73,21 @@ RelPresheaves× A B = record
   { F₀           = λ X → A.₀ X × B.₀ X
   ; F₁           = λ f → λ { (a , b) (c , d) → A.₁ f a c × B.₁ f b d }
   ; identity     = (λ { (e , f) → lift (⟨ lower (proj₁ A.identity e) , lower (proj₁ B.identity f) ⟩) })
-                  , (λ { (lift refl) → proj₂ A.identity (lift refl) , proj₂ B.identity (lift refl) })
+                 , (λ { (lift refl) → proj₂ A.identity (lift refl) , proj₂ B.identity (lift refl) })
   ; homomorphism = (λ { (a , b) →
                       let (af , ag , ah) = proj₁ A.homomorphism a
                           (bf , bg , bh) = proj₁ B.homomorphism b
                         in (af , bf) , (ag , bg) , (ah , bh) })
-                  , (λ { ((af , bf) , (ag , bg) , (ah , bh)) →
-                          proj₂ A.homomorphism (af , ag , ah)
-                        , proj₂ B.homomorphism (bf , bg , bh)})
+                 , (λ { ((af , bf) , (ag , bg) , (ah , bh)) →
+                      proj₂ A.homomorphism (af , ag , ah)
+                      , proj₂ B.homomorphism (bf , bg , bh)})
   ; F-resp-≈     = λ { e →
-                      let (fr1 , fr2) = A.F-resp-≈ e
-                          (gr1 , gr2) = B.F-resp-≈ e
-                      in (λ { (x , y) → fr1 x , gr1 y })
-                        , (λ { (x , y) → fr2 x , gr2 y }) }
+                       let (fr1 , fr2) = A.F-resp-≈ e
+                           (gr1 , gr2) = B.F-resp-≈ e
+                        in (λ { (x , y) → fr1 x , gr1 y })
+                         , (λ { (x , y) → fr2 x , gr2 y }) }
   } where module A = Functor A
           module B = Functor B
-
 
 module _ {o′ ℓ′ o″ ℓ″} where
   record RelPresheaf⇒ (X : Presheaf C (Rels o′ ℓ′)) (U : Presheaf C (Rels o″ ℓ″)) : Set (o′ ⊔ ℓ′) where
@@ -109,6 +108,7 @@ module _ {o′ ℓ′ o″ ℓ″} where
     } where module X = Functor X
 -}
 
+{-
 module IsCartesian o′ ℓ′ where
 
   private
@@ -146,17 +146,17 @@ module IsCartesian o′ ℓ′ where
                 module β = NaturalTransformation β
             in ntHelper record
             { η       = λ { σ Fσ (Aσ , Bσ) → α.η σ Fσ Aσ × β.η σ Fσ Bσ }
-            ; commute = λ f →
-                          let (αf₁ , αf₂) = α.commute f
-                              (βf₁ , βf₂) = β.commute f in
-                               (λ { (a , b , (c , d)) →
-                                 let (α1 , α2 , α3) = αf₁ (a , b , c)
-                                     (β1 , β2 , β3) = βf₁ (a , b , d)
-                                 in (α1 , β1) , (α2 , β2) , (α3 , β3)})
-                             , (λ { ((α1 , β1) , (α2 , β2) , (α3 , β3)) →
-                                 let (a1 , a2 , a3) = αf₂ ({!   !} , {!   !} , {!   !})
-                                     (b1 , b2 , b3) = βf₂ ({!   !} , {!   !} , {!   !})
-                                  in b1 , b2 , {!   !} , {!   !} })
+            ; commute = {!   !} --λ f →
+                        --  let (αf₁ , αf₂) = α.commute f
+                        --      (βf₁ , βf₂) = β.commute f in
+                        --       (λ { (a , b , (c , d)) →
+                        --         let (α1 , α2 , α3) = αf₁ (a , b , c)
+                        --             (β1 , β2 , β3) = βf₁ (a , b , d)
+                        --         in (α1 , β1) , (α2 , β2) , (α3 , β3)})
+                        --     , (λ { ((α1 , β1) , (α2 , β2) , (α3 , β3)) →
+                        --         let (a1 , a2 , a3) = αf₂ ({!   !} , {!   !} , {!   !})
+                        --             (b1 , b2 , b3) = βf₂ ({!   !} , {!   !} , {!   !})
+                        --          in b1 , b2 , {!   !} , {!   !} })
             }
           ; project₁ = {!   !} --(λ { ((a , b) , (c , d) , lift refl) → c }) , (λ { {F} {σ} a → {!   !} })
           ; project₂ = {!   !}
@@ -232,3 +232,4 @@ module IsCartesian o′ ℓ′ where
   --  }
 
   module RelPresheaves-Cartesian = Cartesian RelPresheaves-Cartesian
+-}

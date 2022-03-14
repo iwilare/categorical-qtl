@@ -48,6 +48,6 @@ record CounterpartWPresheaf (SΣ : Signature) {o} {ℓ} {e} : Set (suc o ⊔ suc
   open BinaryProducts products
   open Terminal terminal
 
-  field
-    D : Σ → RelPresheaf W
-    F : dmap (λ { F< _ , τ* , τ > → {!   !} }) 𝓕
+--  field
+--    D : Σ → RelPresheaf W
+--    F : dmap (λ { F< _ , τ* , τ > → {!   !} }) 𝓕

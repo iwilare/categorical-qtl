@@ -10,6 +10,7 @@ open import Data.Unit.Polymorphic using (⊤; tt)
 open import Function using (_∘_; const)
 open import Relation.Binary.PropositionalEquality
 open import Size
+open import Relation.Binary
 
 open import DVec
 
@@ -57,9 +58,17 @@ record Σ-Homomorphism (SΣ : Signature) (A : Σ-Algebra SΣ) (B : Σ-Algebra S�
   field
     ρ      : {τ : Σ} → A.₀ τ → B.₀ τ
     ρ-homo :
-       ∀ (πᵢ : Fin 𝒇)
-       → (as : A.argTypes πᵢ)
-       → ρ (A.F πᵢ as) ≡ B.F πᵢ (map ρ as)
+       ∀ (f : Fin 𝒇)
+       → (as : A.argTypes f)
+       → ρ (A.F f as) ≡ B.F f (map ρ as)
+
+    r : {τ : Σ} → REL (A.₀ τ) (B.₀ τ) Level.zero
+    r-homo :
+       ∀ (f : Fin 𝒇)
+       → (as : A.argTypes f)
+       → (bs : B.argTypes f)
+       → zip r as bs
+       → r (A.F f as) (B.F f bs)
 
 module Terms (SΣ : Signature) where
 
