@@ -1,15 +1,16 @@
 {-# OPTIONS --sized-types #-}
 
 open import SortedAlgebra
-open import Data.Vec.Functional
+open import Data.Vec using (Vec; [_])
+open import Data.Vec.Functional using (_∷_; []) renaming (Vector to Assoc)
 open import Data.Fin
+open import Data.Product using (_,_)
+open import Data.Unit.Base using (tt)
+open import Level using (lift)
 
 data Sort : Set where
   Edge : Sort
   Node : Sort
-
-[_] : Sort → Vector Sort 1
-[ x ] = x ∷ []
 
 Gr : Signature
 Gr = record { Σ = Sort
@@ -21,8 +22,12 @@ Gr = record { Σ = Sort
 
 G₀ : Σ-Algebra Gr
 G₀ = record { S = λ { Edge → Edges ; Node → Nodes }
-            ; F = λ { zero       → λ args → {!   !} -- Source
-                    ; (suc zero) → λ args → {!   !} -- Target
+            ; F = λ { zero       → λ { (e0 , _) → n0
+                                     ; (e1 , _) → n1
+                                     ; (e2 , _) → n2 } -- Source
+                    ; (suc zero) → λ { (e0 , _) → n1
+                                     ; (e1 , _) → n2
+                                     ; (e2 , _) → n0 } -- Target
                     }
             }
    where
