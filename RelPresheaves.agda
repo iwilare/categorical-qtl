@@ -1,8 +1,6 @@
-{-# OPTIONS --without-K --safe #-}
-
 open import Categories.Category
 
-module RelPresheaves {o ℓ e} (C : Category o ℓ e) where
+module RelPresheaves {co cℓ ce} (C : Category co cℓ ce) where
 
 open import Level
 open import Data.Product using (_,_)
@@ -20,7 +18,7 @@ open import Categories.Functor.Presheaf
 open import Categories.NaturalTransformation
 
 import Categories.Category.Monoidal.Instance.Rels as T
-import Categories.Category.Construction.Properties.Presheaves as K
+import Categories.Category.Construction.Properties.Presheaves.Cartesian as K
 
 open import Data.Product
 open import Data.Sum
@@ -28,37 +26,23 @@ open import Data.Bool
 open import Data.Unit.Polymorphic hiding (tt)
 open import Data.Unit.Base using (tt)
 
+open import Utils
+
+private
+  variable
+    ℓ : Level
+    o′ ℓ′ : Level
+    o″ ℓ″ : Level
+
 RelPresheaf : ∀ {o ℓ e} (C : Category o ℓ e) → Set _
 RelPresheaf {o} {ℓ} C = Presheaf C (Rels o ℓ)
 
 RelPresheaves : ∀ o′ ℓ′ {o ℓ e} → Category o ℓ e → Category _ _ _
 RelPresheaves o′ ℓ′ C = Functors (Category.op C) (Rels o′ ℓ′)
 
-{-
-module _ {o′ ℓ′ o″ ℓ″} where
+open import Relation.Binary.PropositionalEquality as Eq using (_≡_; refl)
 
-  Presheaves× : ∀ (A : Presheaf C (Setoids o′ ℓ′)) (A : Presheaf C (Setoids o″ ℓ″)) → Presheaf C (Setoids (o′ ⊔ o″) (ℓ′ ⊔ ℓ″))
-  Presheaves× A B = record
-    { F₀           = λ X → ×-setoid (A.₀ X) (B.₀ X)
-    ; F₁           = λ f → record
-      { _⟨$⟩_ = λ { (a , b) → A.₁ f ⟨$⟩ a , B.₁ f ⟨$⟩ b }
-      ; cong  = λ { (eq₁ , eq₂) → Π.cong (A.₁ f) eq₁ , Π.cong (B.₁ f) eq₂ }
-      }
-    ; identity     = λ { (eq₁ , eq₂)    → A.identity eq₁ , B.identity eq₂ }
-    ; homomorphism = λ { (eq₁ , eq₂)    → A.homomorphism eq₁ , B.homomorphism eq₂ }
-    ; F-resp-≈     = λ { eq (eq₁ , eq₂) → A.F-resp-≈ eq eq₁ , B.F-resp-≈ eq eq₂ }
-    }
-    where module A = Functor A
-          module B = Functor B
--}
-
-import Relation.Binary.PropositionalEquality as Eq
-open Eq using (_≡_; refl)
-
-⟨_,_⟩ : ∀ {ℓ ℓ′} {A : Set ℓ} {B : Set ℓ′} {a b : A} {c d : B} → a ≡ b → c ≡ d → (a , c) ≡ (b , d)
-⟨ refl , refl ⟩ = refl
-
-RelPresheaf⊤ : ∀ {o′ ℓ′} → Presheaf C (Rels o′ ℓ′)
+RelPresheaf⊤ : Presheaf C (Rels o′ ℓ′)
 RelPresheaf⊤ = record
   { F₀ = λ x → ⊤
   ; F₁ = λ { f _ _ → ⊤ }
@@ -68,7 +52,7 @@ RelPresheaf⊤ = record
   ; F-resp-≈ = λ f → (λ { (lift tt) → lift tt }), (λ { (lift tt) → lift tt })
   }
 
-RelPresheaves× : ∀ {o′ ℓ′ o″ ℓ″} → (A : Presheaf C (Rels o′ ℓ′)) → (B : Presheaf C (Rels o″ ℓ″)) → Presheaf C (Rels (o′ ⊔ o″) (ℓ′ ⊔ ℓ″))
+RelPresheaves× : (A : Presheaf C (Rels o′ ℓ′)) → (B : Presheaf C (Rels o″ ℓ″)) → Presheaf C (Rels (o′ ⊔ o″) (ℓ′ ⊔ ℓ″))
 RelPresheaves× A B = record
   { F₀           = λ X → A.₀ X × B.₀ X
   ; F₁           = λ f → λ { (a , b) (c , d) → A.₁ f a c × B.₁ f b d }
@@ -89,23 +73,37 @@ RelPresheaves× A B = record
   } where module A = Functor A
           module B = Functor B
 
-module _ {o′ ℓ′ o″ ℓ″} where
-  record RelPresheaf⇒ (X : Presheaf C (Rels o′ ℓ′)) (U : Presheaf C (Rels o″ ℓ″)) : Set (o′ ⊔ ℓ′) where
-    module X = Functor X
-    module U = Functor U
-    --field
-    --  η : ∀ σ → X.₀ σ → U.₀ σ
+P[_] : ∀ {ℓ} → Set ℓ → Set (suc ℓ)
+P[_] {ℓ} X = X → Set ℓ
+
+PowerRel : ∀ {A B : Set ℓ} → (R : REL A B ℓ) → REL (P[ A ]) (P[ B ]) ℓ --Presheaf C (Rels _ (suc ℓ ⊔ o′ ⊔ ℓ′))
+PowerRel R S′ S = ∀ a → S′ a → ∃[ b ] (S b × R a b)
+
+
+
+
+
+PX : (X : Presheaf C (Rels o′ ℓ′)) → Presheaf C (Rels {!   !} {!   !})
+PX X = record
+  { F₀ = λ σ →  P[ X.₀ σ ]
+  ; F₁ = λ f → {! PowerRel ?  !} --PowerRel (X.₁ f)
+  ; identity = {!   !}
+  ; homomorphism = {!   !}
+  ; F-resp-≈ = {!   !}
+  } where module X = Functor X
 
 
 {-
-¶ : ∀ {o′ ℓ′} → (X : Presheaf C (Rels o′ ℓ′)) → Presheaf C (Rels o′ ℓ′)
-¶ X = record
-    { F₀ = λ σ → (X.₀ σ → Bool)
-    ; F₁ = λ f → {!   !} --λ σ ω → {!   !}
+∈X : ∀ {o′ ℓ′} → (X : Presheaf C (Rels o′ ℓ′)) → Presheaf C (Rels _ (suc ℓ ⊔ o′ ⊔ ℓ′))
+∈X X = record
+    { F₀ = λ σ → Σ[ (a , A) ∈ (X.₀ σ × P[ X.₀ σ ]) ] A a
+    ; F₁ = λ f → λ ((a , A) , a∈A) ((b , B) , b∈B) → Lift _ (X.₁ f a b × {!   !}) --λ σ ω → {!   !}
     ; identity = {!   !}
     ; homomorphism = {!   !}
     ; F-resp-≈ = {!   !}
     } where module X = Functor X
+
+{-
 -}
 
 {-
@@ -232,4 +230,5 @@ module IsCartesian o′ ℓ′ where
   --  }
 
   module RelPresheaves-Cartesian = Cartesian RelPresheaves-Cartesian
+-}
 -}

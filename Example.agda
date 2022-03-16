@@ -12,26 +12,29 @@ data Sort : Set where
   Edge : Sort
   Node : Sort
 
+data Function : Set where
+  s : Function
+  t : Function
+
 Gr : Signature
 Gr = record { Σ = Sort
-            ; 𝒇 = _
-            ; 𝓕 = F< 1 , [ Edge ] , Node > -- Source
-                ∷ F< 1 , [ Edge ] , Node > -- Target
-                ∷ []
+            ; 𝓕 = Function
+            ; sign = λ { s → F< _ , [ Edge ] , Node >
+                       ; t → F< _ , [ Edge ] , Node > }
             }
 
 G₀ : Σ-Algebra Gr
 G₀ = record { S = λ { Edge → Edges ; Node → Nodes }
-            ; F = λ { zero       → λ { (e0 , _) → n0
-                                     ; (e1 , _) → n1
-                                     ; (e2 , _) → n2 } -- Source
-                    ; (suc zero) → λ { (e0 , _) → n1
-                                     ; (e1 , _) → n2
-                                     ; (e2 , _) → n0 } -- Target
+            ; F = λ { s → λ { (e0 , _) → n0
+                            ; (e1 , _) → n1
+                            ; (e2 , _) → n2
+                            }
+                    ; t → λ { (e0 , _) → n1
+                            ; (e1 , _) → n2
+                            ; (e2 , _) → n0
+                            }
                     }
             }
    where
-    data Edges : Set where
-        e0 e1 e2 : Edges
-    data Nodes : Set where
-        n0 n1 n2 : Nodes
+    data Edges : Set where e0 e1 e2 : Edges
+    data Nodes : Set where n0 n1 n2 : Nodes
