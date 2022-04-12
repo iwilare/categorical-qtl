@@ -1,29 +1,23 @@
 {-# OPTIONS --sized-types #-}
 
-open import Categories.Category
-
-module TemporalStructure {co cℓ ce} (C : Category co cℓ ce) where
-
 open import Level
-
-open Category C
+open import Categories.Category
 
 open import Data.Vec as V using () renaming (Vec to Vector)
 open import Data.Vec.Membership.Propositional
 open import Data.Nat using (ℕ; zero; suc)
 open import Data.Product using (_,_; -,_; ∃-syntax) renaming (proj₁ to fst; proj₂ to snd)
 
-private
-  variable
-    ℓ : Level
+record TemporalStructure {co cℓ ce} (W : Category co cℓ ce) : Set (co ⊔ cℓ) where
+  constructor TStructure
 
-record TemporalStructure : Set (co ⊔ cℓ) where
+  open Category W
 
   field
     arrows : (A : Obj) → ∃[ n ] (Vector (∃[ B ] (A ⇒ B)) n)
 
   record Path (A : Obj) : Set (co ⊔ cℓ) where
-    constructor _∷_
+    constructor _⟶_
     coinductive
 
     field
@@ -32,9 +26,9 @@ record TemporalStructure : Set (co ⊔ cℓ) where
       ins   : (B , arr) ∈ snd (arrows A)
       next  : Path B
 
-  lookup : ∀ {A} → Path A → (i : ℕ) → ∃[ B ] Path B
-  lookup p zero    = -, p
-  lookup p (suc i) = lookup (Path.next p) i
+  drop : ∀ {A} → Path A → (i : ℕ) → ∃[ B ] Path B
+  drop p zero    = -, p
+  drop p (suc i) = drop (Path.next p) i
 
   comp : ∀ {A} → Path A → (i : ℕ) → ∃[ B ] (A ⇒ B)
   comp p zero    = -, id

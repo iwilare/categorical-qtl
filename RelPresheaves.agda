@@ -22,12 +22,10 @@ import Categories.Category.Monoidal.Instance.Rels as T
 import Categories.Category.Construction.Properties.Presheaves.Cartesian as K
 
 open import Function using (id; _∘_)
-open import Data.Product -- renaming ([_,_] to [_&_])
+open import Data.Product
 open import Data.Bool
 open import Data.Unit.Polymorphic hiding (tt)
 open import Data.Unit.Base using (tt)
-
-open import Utils
 
 private
   variable
@@ -39,10 +37,10 @@ RelPresheaf : Set _
 RelPresheaf = Presheaf C (Rels co cℓ)
 
 record RelPresheaf⇒ (X : RelPresheaf) (U : RelPresheaf) : Set (co ⊔ cℓ) where
-
-  module X = Functor X
-  module U = Functor U
-
+  eta-equality
+  private
+    module X = Functor X
+    module U = Functor U
   open Category C
 
   field
@@ -50,6 +48,9 @@ record RelPresheaf⇒ (X : RelPresheaf) (U : RelPresheaf) : Set (co ⊔ cℓ) wh
     imply : ∀ {σ τ t s} {f : C [ σ , τ ]}
             → X.₁ f    t     s
             → U.₁ f (η t) (η s)
+
+⟨_,_⟩ : ∀ {ℓ ℓ′} {A : Set ℓ} {B : Set ℓ′} {a b : A} {c d : B} → a ≡ b → c ≡ d → (a , c) ≡ (b , d)
+⟨ refl , refl ⟩ = refl
 
 _≈′_ : RelPresheaf → RelPresheaf → Set (suc co)
 X ≈′ U = ∀ σ → X.₀ σ ≡ U.₀ σ
@@ -124,7 +125,7 @@ module IsCartesian where
     { terminal = record
       { ⊤ = RelPresheaf⊤
       ; ⊤-is-terminal = record
-        { !        = record { η = λ _ → lift tt ; imply = λ x → lift tt }
+        { !        = record { η = λ _ → lift tt ; imply = λ _ → lift tt }
         ; !-unique = λ f x → refl
         }
       }
