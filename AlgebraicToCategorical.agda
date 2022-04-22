@@ -15,7 +15,7 @@ open import DVec using (⊤)
 open import SortedAlgebra
 open import TemporalStructure
 open import CounterpartAlgebraic
-open import CounterpartCategorial
+open import CounterpartCategorical
 open import RelPresheaves
 open import FreeCategory
 

@@ -14,14 +14,14 @@ open import Categories.Functor
 
 open import SortedAlgebra using (Signature; module Terms)
 open import RelPresheaves
-open import CounterpartCategorial
+open import CounterpartCategorical
 open import TemporalStructure
 open import DVec
 
 module LTL {ℓ} {SΣ : Signature {ℓ}} (ℑ : CounterpartWModel SΣ) (T : TemporalStructure (CounterpartWModel.W ℑ)) where
   open CounterpartWModel ℑ
   open Signature SΣ
-  open Terms SΣ hiding (_⊢_)
+  open Terms SΣ
   open TemporalStructure.TemporalStructure T
   open RelPresheaf⇒
   open Category W
@@ -32,6 +32,7 @@ module LTL {ℓ} {SΣ : Signature {ℓ}} (ℑ : CounterpartWModel SΣ) (T : Temp
     _∨_ : ∀ {Γ} → [ Γ ] → [ Γ ] → [ Γ ]
     _U_ : ∀ {Γ} → [ Γ ] → [ Γ ] → [ Γ ]
     ◯_  : ∀ {Γ} → [ Γ ] → [ Γ ]
+    ∀◯_ : ∀ {Γ} → [ Γ ] → [ Γ ]
     ◇_  : ∀ {Γ} → [ Γ ] → [ Γ ]
     □_  : ∀ {Γ} → [ Γ ] → [ Γ ]
     ∃<_>_ : ∀ {n} {Γ : Vec Σ n}
@@ -66,52 +67,46 @@ module LTL {ℓ} {SΣ : Signature {ℓ}} (ℑ : CounterpartWModel SΣ) (T : Temp
 
   infix 10 _∋_⊨_
 
-  data _∋_⊨_ {n} {Γ : Vec Σ n} : ∀ (ω : _) → ⟦ Γ ⟧*₀ ω → [ -, Γ ] → Set ℓ where
-    ⊨⊤   : ∀ {ω} {s : ⟦ Γ ⟧*₀ ω}
-         → ω ∋ s ⊨ true
-    ⊨≡   : ∀ {ω τ i} {s : ⟦ Γ ⟧*₀ ω}
-         → {t₁ t₂ : (n , Γ) ⊢ τ ⟨ i ⟩}
-         → η (⟦ t₁ ⟧ᵗ) s ≡ η (⟦ t₂ ⟧ᵗ) s
-         → ω ∋ s ⊨ (t₁ ≡ᵗ t₂)
-    ⊨≢   : ∀ {ω τ i} {s : ⟦ Γ ⟧*₀ ω}
-         → {t₁ t₂ : (n , Γ) ⊢ τ ⟨ i ⟩}
-         → η (⟦ t₁ ⟧ᵗ) s ≢ η (⟦ t₂ ⟧ᵗ) s
-         → ω ∋ s ⊨ (t₁ ≢ᵗ t₂)
-    ⊨∧   : ∀ {ω} {s : ⟦ Γ ⟧*₀ ω} {ϕ₁ ϕ₂ : [ -, Γ ]}
-         → ω ∋ s ⊨ ϕ₁ × ω ∋ s ⊨ ϕ₂
-         → ω ∋ s ⊨ ϕ₁ ∧ ϕ₂
-    ⊨∨   : ∀ {ω} {s : ⟦ Γ ⟧*₀ ω} {ϕ₁ ϕ₂ : [ -, Γ ]}
-         → ω ∋ s ⊨ ϕ₁ ⊎ ω ∋ s ⊨ ϕ₂
-         → ω ∋ s ⊨ ϕ₁ ∨ ϕ₂
-    ⊨∀   : ∀ {ω τ} {s : ⟦ Γ ⟧*₀ ω} {ϕ : [ -, τ ∷ Γ ]}
-         → (∀ b → ω ∋ (b , s) ⊨ ϕ)
-         → ω ∋ s ⊨ ∀< τ > ϕ
-    ⊨∃   : ∀ {ω τ} {s : ⟦ Γ ⟧*₀ ω} {ϕ : [ -, τ ∷ Γ ]}
-         → (∃[ b ] ω ∋ (b , s) ⊨ ϕ)
-         → ω ∋ s ⊨ ∃< τ > ϕ
-    ⊨◯   : ∀ {ω} {s : ⟦ Γ ⟧*₀ ω} {ϕ : [ -, Γ ]}
-         → map (λ { (σ , ρ) → ∃[ z ] ⟦ Γ ⟧*₁ ρ z s × σ ∋ z ⊨ ϕ }) (snd (arrows ω))
-         → ω ∋ s ⊨ ◯ ϕ
+  data _∋_⊨_ {n} {Γ : Vec Σ n} : ∀ ω → ⟦ Γ ⟧*₀ ω → [ -, Γ ] → Set ℓ where
+    ⊨⊤   : ∀ {ω} {a : ⟦ Γ ⟧*₀ ω}
+         → ω ∋ a ⊨ true
+    ⊨≡   : ∀ {ω τ i} {a : ⟦ Γ ⟧*₀ ω} {t₁ t₂ : (n , Γ) ⊢ τ ⟨ i ⟩}
+         → η (⟦ t₁ ⟧ᵗ) a ≡ η (⟦ t₂ ⟧ᵗ) a
+         → ω ∋ a ⊨ (t₁ ≡ᵗ t₂)
+    ⊨≢   : ∀ {ω τ i} {a : ⟦ Γ ⟧*₀ ω} {t₁ t₂ : (n , Γ) ⊢ τ ⟨ i ⟩}
+         → η (⟦ t₁ ⟧ᵗ) a ≢ η (⟦ t₂ ⟧ᵗ) a
+         → ω ∋ a ⊨ (t₁ ≢ᵗ t₂)
+    ⊨∧   : ∀ {ω} {a : ⟦ Γ ⟧*₀ ω} {ϕ₁ ϕ₂ : [ -, Γ ]}
+         → ω ∋ a ⊨ ϕ₁ × ω ∋ a ⊨ ϕ₂
+         → ω ∋ a ⊨ ϕ₁ ∧ ϕ₂
+    ⊨∨   : ∀ {ω} {a : ⟦ Γ ⟧*₀ ω} {ϕ₁ ϕ₂ : [ -, Γ ]}
+         → ω ∋ a ⊨ ϕ₁ ⊎ ω ∋ a ⊨ ϕ₂
+         → ω ∋ a ⊨ ϕ₁ ∨ ϕ₂
 
-    ⊨U   : ∀ {ω} {s : ⟦ Γ ⟧*₀ ω} {ϕ₁ ϕ₂ : [ -, Γ ]}
-         → (p : Path ω)
-         → (∃[ n ] (∀ i → i ≤ n → ∃[ zi ] let σ , ρ = comp p i in ⟦ Γ ⟧*₁ ρ zi s × σ ∋ zi ⊨ ϕ₁)
-                 × (              ∃[ zn ] let σ , ρ = comp p n in ⟦ Γ ⟧*₁ ρ zn s × σ ∋ zn ⊨ ϕ₂))
-         → ω ∋ s ⊨ ϕ₁ U ϕ₂
-    ⊨□   : ∀ {ω} {s : ⟦ Γ ⟧*₀ ω} {ϕ : [ -, Γ ]}
-         → (p : Path ω)
-         → (∀ n  → ∃[ z ] let σ , ρ = comp p n in ⟦ Γ ⟧*₁ ρ z s × σ ∋ z ⊨ ϕ)
-         → ω ∋ s ⊨ □ ϕ
-    ⊨◇   : ∀ {ω} {s : ⟦ Γ ⟧*₀ ω} {ϕ : [ -, Γ ]}
-         → (p : Path ω)
-         → (∃[ n ] ∃[ z ] let σ , ρ = comp p n in ⟦ Γ ⟧*₁ ρ z s × σ ∋ z ⊨ ϕ)
-         → ω ∋ s ⊨ ◇ ϕ
+    ⊨∀   : ∀ {ω τ} {a : ⟦ Γ ⟧*₀ ω} {ϕ : [ -, τ ∷ Γ ]}
+         → (∀ b → ω ∋ (b , a) ⊨ ϕ)
+         → ω ∋ a ⊨ ∀< τ > ϕ
+    ⊨∃   : ∀ {ω τ} {a : ⟦ Γ ⟧*₀ ω} {ϕ : [ -, τ ∷ Γ ]}
+         → (∃[ b ] ω ∋ (b , a) ⊨ ϕ)
+         → ω ∋ a ⊨ ∃< τ > ϕ
 
---    ---------------------------------------
---    ⊨∃CTL  : ∀ {ω} {s : ⟦ Γ ⟧*₀ ω} {ϕ : [ -, Γ ]}
---        → ∃[ p ] {!   !}
---        → ω ∋ s ⊨ ◇ ϕ
---    ⊨∃□  : ∀ {ω} {s : ⟦ Γ ⟧*₀ ω} {ϕ : [ -, Γ ]}
---        → (p : Path ω)
---        → (∃[ n ] ∃[ z ] let σ , ρ = comp p n in ⟦ Γ ⟧*₁ ρ z s × σ ∋ z ⊨ ϕ)
---        → ω ∋ s ⊨ ◇ ϕ
+    ⊨◯   : ∀ {ω} {a : ⟦ Γ ⟧*₀ ω} {ϕ : [ -, Γ ]}
+         → map (λ { (σ , ρ) →
+                      ∃[ z ]
+                          ⟦ Γ ⟧*₁ ρ z a
+                        × σ ∋ z ⊨ ϕ
+                  }) (snd (arrows ω))
+         → ω ∋ a ⊨ ◯ ϕ
+    ⊨U   : ∀ {ω} {a : ⟦ Γ ⟧*₀ ω} {ϕ₁ ϕ₂ : [ -, Γ ]}
+         → (p : Path ω)
+         → (∃[ n ] (∀ i → i ≤ n → ∃[ zi ] let σ , ρ = comp p i in ⟦ Γ ⟧*₁ ρ zi a × σ ∋ zi ⊨ ϕ₁)
+                 × (              ∃[ zn ] let σ , ρ = comp p n in ⟦ Γ ⟧*₁ ρ zn a × σ ∋ zn ⊨ ϕ₂))
+         → ω ∋ a ⊨ ϕ₁ U ϕ₂
+    ⊨□   : ∀ {ω} {a : ⟦ Γ ⟧*₀ ω} {ϕ : [ -, Γ ]}
+         → (p : Path ω)
+         → (∀ n  → ∃[ z ] let σ , ρ = comp p n in ⟦ Γ ⟧*₁ ρ z a × σ ∋ z ⊨ ϕ)
+         → ω ∋ a ⊨ □ ϕ
+    ⊨◇   : ∀ {ω} {a : ⟦ Γ ⟧*₀ ω} {ϕ : [ -, Γ ]}
+         → (p : Path ω)
+         → (∃[ n ] ∃[ z ] let σ , ρ = comp p n in ⟦ Γ ⟧*₁ ρ z a × σ ∋ z ⊨ ϕ)
+         → ω ∋ a ⊨ ◇ ϕ

@@ -100,7 +100,7 @@ module Terms (SΣ : Signature) where
   data _⊢_⟨_⟩ : Ctx → Σ → Size → Set ℓ where
     var : ∀ {Γ}
         → (i : Fin (fst Γ))
-          ----------------------------
+          -------------------
         → Γ ⊢ (Γ [ i ]) ⟨ ∞ ⟩
     fun : ∀ {i Γ}
         → (f : 𝓕)
@@ -108,11 +108,10 @@ module Terms (SΣ : Signature) where
           ------------------------
         → Γ ⊢ ret f ⟨ ↑ i ⟩
 
-
-  #_ : ∀ {Γ} → (i : Fin (fst Γ)) → Γ ⊢ (Γ [ i ]) ⟨ ∞ ⟩
+  #_ : ∀ {Γ} i → Γ ⊢ _ ⟨ ∞ ⟩
   #_ = var
 
-  _$_ : ∀ {i Γ} → (f : 𝓕) → map (Γ ⊢_⟨ i ⟩) (args f) → Γ ⊢ ret f ⟨ ↑ i ⟩
+  _$_ : ∀ {i Γ} f → _ → Γ ⊢ _ ⟨ ↑ i ⟩
   _$_ = fun
 
   infix 30 #_
@@ -132,7 +131,7 @@ module Terms (SΣ : Signature) where
   sub σ (fun f x) = fun f (dmap (sub σ) x)
 
   id : ∀ {Γ} → Subst Γ Γ
-  id = var
+  id i = var i
 
   _∘_ : ∀ {A B C} → Subst B C → Subst A B → Subst A C
   (f ∘ g) i = sub f (g i)

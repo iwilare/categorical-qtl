@@ -193,9 +193,9 @@ T = TStructure λ { ω₀ → -, (-, f₀ *)             ∷ []
                  ; ω₂ → -, (-, f₃ *)             ∷ []
                  }
 
-import LTL
+import LTLFunction
 
-open LTL ℑ T
+open LTLFunction ℑ T
 
 open SortedAlgebra.Terms Gr
 
@@ -209,85 +209,17 @@ loop : [ -, Edge ∷ [] ]
 loop = s $ (# zero , ⊤) ≡ᵗ t $ (# zero , ⊤)
 
 nextStepPreserved : ∀ {τ} → [ -, τ ∷ [] ]
-nextStepPreserved = present ∧ ◯ present
+nextStepPreserved = present ∧ ∃◯ present
 
 nextStepDeallocated : ∀ {τ} → [ -, τ ∷ [] ]
 nextStepDeallocated = present ∧ ∀◯ notPresent
 
-
-
-ExampleLoop : Dec (ω₂ ∋ e5 , ⊤ ⊨ loop)
-ExampleLoop = yes (⊨≡ refl)
-
-ExampleExistsNext : ∀ ω n → Dec (ω ∋ n , ⊤ ⊨ ∃< Node > ((# suc zero ≢ᵗ # zero) ∧ (◯ # suc zero ≡ᵗ # zero)))
-ExampleExistsNext ω₀ n0 = yes {!   !}
-ExampleExistsNext ω₀ n1 = no λ { (⊨∃ (p ,
-                                     ⊨∧ (⊨≢ x ,
-                                       ⊨◯ (((n3 , n3 , ⊤) , ((n3 , refl , _   ) , (n4 , ()   , n1n4) , ⊤) , ⊨≡ refl) , ⊤))))
-                               ; (⊨∃ (n1 ,
-                                     ⊨∧ (⊨≢ x ,
-                                       ⊨◯ (((n4 , n4 , ⊤) , ((n4 , refl , n1n4) , (n4 , refl , n1n4) , ⊤) , ⊨≡ refl) , ⊤)))) → x refl }
-ExampleExistsNext ω₀ n2 = yes (⊨∃ (n0 ,
-                         (⊨∧ (⊨≢ (λ ()) ,
-                             ⊨◯ ((-, (((-, refl , n0n3) , (-, refl , n2n3) , ⊤)) , ⊨≡ refl)
-                               , ⊤)))))
-ExampleExistsNext ω₁ n3 = yes (⊨∃ (n4 ,
-                         (⊨∧ ( ⊨≢ (λ ()) ,
-                             ⊨◯ ((-, (((-, refl , n4n5₁) , (-, refl , n3n5₁) , ⊤) , ⊨≡ refl))
-                               , (-, (((-, refl , n4n5₂) , (-, refl , n3n5₂) , ⊤) , ⊨≡ refl))
-                               , ⊤)))))
-ExampleExistsNext ω₁ n4 = yes (⊨∃ (n3 ,
-                         (⊨∧ ( ⊨≢ (λ ()) ,
-                             ⊨◯ ((-, (((-, refl , n3n5₁) , (-, refl , n4n5₁) , ⊤) , ⊨≡ refl))
-                               , (-, (((-, refl , n3n5₂) , (-, refl , n4n5₂) , ⊤) , ⊨≡ refl))
-                               , ⊤)))))
-ExampleExistsNext ω₂ n5 = no λ { (⊨∃ (n5 ,
-                            ⊨∧ (⊨≢ x ,
-                              ⊨◯ (((n5 , n5 , ⊤) , ((n5 , refl , n5n5) , (n5 , refl , n5n5) , ⊤) , ⊨≡ refl) , ⊤)))) → x refl }
-
-NextStepPreserved : ∀ ω e → Dec (ω ∋ e , ⊤ ⊨ nextStepPreserved {Edge})
-NextStepPreserved ω₀ e0 = yes (⊨∧ ((⊨∃ (e0 , (⊨≡ refl)))
-                                     , (⊨◯ (((e3 , ⊤) , (((e3 , refl , e0e3) , ⊤) , ⊨∃ (e3 , (⊨≡ refl)))) , ⊤))))
-NextStepPreserved ω₀ e1 = yes (⊨∧ ((⊨∃ (e1 , (⊨≡ refl)))
-                                     , (⊨◯ (((e4 , ⊤) , ((e4 , (refl , e1e4)) , ⊤) , (⊨∃ (e4 , ⊨≡ refl))) , ⊤))))
-NextStepPreserved ω₀ e2 = no λ { (⊨∧ (⊨∃ _ , ⊨◯ ())) }
-NextStepPreserved ω₁ e3 = no λ { (⊨∧ (⊨∃ _ , ⊨◯ ())) }
-NextStepPreserved ω₁ e4 = no λ { (⊨∧ (⊨∃ _ , ⊨◯ ())) }
-NextStepPreserved ω₂ e5 = yes (⊨∧ (⊨∃ (e5 , (⊨≡ refl))
-                                     , ⊨◯ (((e5 , ⊤) , (((e5 , (refl , e5e5)) , ⊤) , (⊨∃ (e5 , (⊨≡ refl))))) , ⊤)))
-
-open RelPresheaf⇒
-
-⊨≢-inversion : ∀ {n} {Γ : Vec _ n} {ω τ i} {s : ⟦ Γ ⟧*₀ ω} {t₁ t₂ : (n , Γ) ⊢ τ ⟨ i ⟩}
-             → ω ∋ s ⊨ (t₁ ≢ᵗ t₂)
-             → η (⟦ t₁ ⟧ᵗ) {ω} s ≢ η (⟦ t₂ ⟧ᵗ) {ω} s
-⊨≢-inversion (⊨≢ x) = x
-
-{-
 NextStepDeallocated : ∀ ω e → Dec (ω ∋ e , ⊤ ⊨ nextStepDeallocated {Edge})
-NextStepDeallocated ω₀ e0 = no λ { (⊨∧ (⊨∃ (e0 , ⊨≡ refl) , ⊨◯ (((e3 , ⊤) , ((e3 , refl , e0e3) , ⊤) , ⊨∀ x) , ⊤))) → ⊨≢-inversion (x e3) refl }
-NextStepDeallocated ω₀ e1 = no λ { (⊨∧ (⊨∃ (e1 , ⊨≡ refl) , ⊨◯ (((e4 , ⊤) , ((e4 , refl , e1e4) , ⊤) , ⊨∀ x) , ⊤))) → ⊨≢-inversion (x e4) refl }
-NextStepDeallocated ω₀ e2 =
-                            --yes (⊨∧ ((⊨∃ (e2 , (⊨≡ refl)))
-                            --          , (⊨◯ (((e3 , ⊤)
-                            --                   , (((e3 , (refl , {!   !})) , ⊤)
-                            --                   , (⊨∀ λ { e3 → ⊨≢ (λ x → {!   !})
-                            --                           ; e4 → ⊨≢ (λ x → {!   !}) }))) , ⊤))))
-
-                            --no λ { (LTL.⊨∧ (LTL.⊨∃ _ , LTL.⊨◯ (((a , ⊤) , ((b , r , ()) , ⊤) , LTL.⊨∀ x) , ⊤))) }
-                            no λ { (LTL.⊨∧ (LTL.⊨∃ _ , LTL.⊨◯ ())) }
-                            -- no λ { (LTL.⊨∧ (LTL.⊨∃ _ , LTL.⊨◯ ())) }
-
-NextStepDeallocated ω₁ e3 = no λ { (LTL.⊨∧ (LTL.⊨∃ _ , LTL.⊨◯ ())) }
-NextStepDeallocated ω₁ e4 = no λ { (LTL.⊨∧ (LTL.⊨∃ _ , LTL.⊨◯ ())) }
-NextStepDeallocated ω₂ e5 = no λ { (⊨∧ (⊨∃ (e5 , ⊨≡ refl) , ⊨◯ (((e5 , ⊤) , ((e5 , refl , e5e5) , ⊤) , ⊨∀ x) , ⊤))) → ⊨≢-inversion (x e5) refl }
--}
-
-NextStepDeallocated : ∀ ω e → Dec (ω ∋ e , ⊤ ⊨ nextStepDeallocated {Edge})
-NextStepDeallocated ω₀ e0 = no λ { (LTL.⊨∧ (LTL.⊨∃ (e0 , LTL.⊨≡ refl) , LTL.⊨∀◯ (fst₁ , ⊤))) →
-                                        let r = fst₁ (e3 , ⊤) ((e3 , refl , e0e3) , ⊤) in {!  !} }
-NextStepDeallocated ω₀ e1 = no {!   !}
-NextStepDeallocated ω₀ e2 = yes (LTL.⊨∧ ((LTL.⊨∃ (e2 , (LTL.⊨≡ refl))) , LTL.⊨∀◯ ((λ { z () }) , ⊤)))
+NextStepDeallocated ω₀ e0 = no λ { ((e0 , refl) , fst₁ , ⊤) → fst₁ (e3 , ⊤) ((e3 , refl , e0e3) , ⊤) e3 refl }
+NextStepDeallocated ω₀ e1 = no λ { ((e0 , ()) , fst₁ , snd₁)
+                                 ; ((e1 , refl) , fst₁ , snd₁) → fst₁ {!   !} {!   !} {!   !} {!   !}
+                                 ; ((e2 , ()) , fst₁ , snd₁) }
+NextStepDeallocated ω₀ e2 = yes ((e2 , refl) , ((λ { (fst , snd) () b x₁ }) , ⊤))
 NextStepDeallocated ω₁ e3 = no {!   !}
 NextStepDeallocated ω₁ e4 = no {!   !}
 NextStepDeallocated ω₂ e5 = no {!   !}

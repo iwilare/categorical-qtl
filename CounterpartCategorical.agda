@@ -34,7 +34,7 @@ private
   variable
     ℓ : Level
 
-⟦_⟧*/ : ∀ {ℓ} {W : Category ℓ ℓ ℓ} {n Σ} → (∀ (τ : Σ) → RelPresheaves.RelPresheaf W) → Vector Σ n → RelPresheaves.RelPresheaf W
+⟦_⟧*/ : ∀ {ℓ} {W : Category ℓ ℓ ℓ} {n Σ} → (∀ (τ : Σ) → RelPresheaf W) → Vector Σ n → RelPresheaf W
 ⟦_⟧*/ ⟦_⟧ Γ = record
   { F₀ = λ σ → DVec.map (λ Σ → F₀ (⟦ Σ ⟧) σ) Γ
   ; F₁ = λ f → DVec.dzip (F₁ (⟦ _ ⟧) f)
@@ -53,19 +53,23 @@ record CounterpartWModel {ℓ} (SΣ : Signature {ℓ}) : Set (suc ℓ) where
 
   field
     W : Category ℓ ℓ ℓ
-    ⟦_⟧ : ∀ (τ : Σ) → RelPresheaf W
 
-  open RelPresheaves W
+  open RelPresheaves W hiding (RelPresheaf)
   open Category RelPresheaves using (_∘_)
 
-  ⟦_⟧* : ∀ {n} → Vector Σ n → RelPresheaves.RelPresheaf W
+  field
+    ⟦_⟧ : ∀ (τ : Σ) → RelPresheaf W
+
+  ⟦_⟧* : ∀ {n} → Vector Σ n → RelPresheaf W
   ⟦_⟧* = ⟦_⟧*/ ⟦_⟧
 
   field
     I : ∀ (f : 𝓕) → RelPresheaf⇒ ⟦ args f ⟧* ⟦ ret f ⟧
 
   πᵢ : ∀ {n} {Γ : Vector Σ n} → (i : Fin n) → RelPresheaf⇒ (⟦ Γ ⟧*) ⟦ V.lookup Γ i ⟧
-  πᵢ i = record { η = lookup i ; imply = ziplookup i }
+  πᵢ i = record { η = lookup i
+               ; imply = ziplookup i
+               }
 
   ⟨_⟩* : ∀ {n m}
        → {Γ : Vector Σ n} {Γ′ : Vector Σ m}

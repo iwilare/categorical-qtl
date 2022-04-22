@@ -8,11 +8,11 @@ import Relation.Binary.PropositionalEquality as Eq
 open Eq using (_≡_; refl; trans; sym; cong; cong-app)
 open Eq.≡-Reasoning using (begin_; _≡⟨⟩_; step-≡; _∎)
 open import Level
-open import Function using () renaming (_∘_ to _∘ᶠ_; id to idᶠ)
+open import Function using (_∘_) renaming (id to idᶠ)
 open import Relation.Binary.HeterogeneousEquality using (≅-to-≡)
 open import Data.Fin using (Fin)
 
-open import SortedAlgebra
+open import SortedAlgebra using (Signature)
 open import DVec
 
 Con : ∀ {ℓ} → Signature {ℓ} → Category _ _ ℓ
@@ -22,7 +22,7 @@ Con {ℓ} SΣ =
     ; _⇒_ = Subst
     ; _≈_ = λ f g → ∀ {x} → f x ≡ g x
     ; id = id
-    ; _∘_ = λ f g i → sub f (g i) --_∘_ --_∘_
+    ; _∘_ = λ f g → sub f ∘ g
     ; assoc = λ { {f = f} →  assoc (f _) }
     ; sym-assoc = λ { {f = f} → sym (assoc (f _)) }
     ; identityˡ = λ { {f = f} → identityˡ  (f _) }
@@ -34,25 +34,25 @@ Con {ℓ} SΣ =
                      }
     ; ∘-resp-≈ = λ { {i = i} e e′ → trans (cong (sub _) e′) (sub-resp-≈ (i _) e) }
     } where
-        open SortedAlgebra.Terms SΣ
+        open SortedAlgebra.Terms SΣ using (Subst; Ctx; _⊢_⟨_⟩; sub; var; fun; id)
 
         assoc : ∀ {i τ A B C} {f : Subst A B} {g : Subst B C} (x : A ⊢ τ ⟨ i ⟩)
-              → sub (sub g ∘ᶠ f) x ≡ sub g (sub f x)
+              → sub (sub g ∘ f) x ≡ sub g (sub f x)
         assoc (var _)   = refl
         assoc (fun f x) = cong (fun f) (trans (dextf assoc) dcomp)
 
         identityʳ : ∀ {i τ A} (x : A ⊢ τ ⟨ i ⟩)
                   → sub var x ≡ idᶠ x
-        identityʳ (var x) = refl
+        identityʳ (var _) = refl
         identityʳ (fun f x) = cong (fun f) (trans (dextf identityʳ) did)
 
         identityˡ : ∀ {i τ A} (x : A ⊢ τ ⟨ i ⟩)
                   → sub var x ≡ idᶠ x
-        identityˡ (var x) = refl
+        identityˡ (var _) = refl
         identityˡ (fun f x) = cong (fun f) (trans (dextf identityˡ) did)
 
         sub-resp-≈ : ∀ {i τ A B} {f g : Subst A B} (x : A ⊢ τ ⟨ i ⟩)
                    → (∀ {x} → f x ≡ g x)
                    → sub f x ≡ sub g x
-        sub-resp-≈ (var x) f≈g = f≈g
+        sub-resp-≈ (var _) f≈g = f≈g
         sub-resp-≈ (fun f x) f≈g = cong (fun f) (dextf λ σ → sub-resp-≈ σ f≈g)
