@@ -4,6 +4,7 @@ open import Data.Vec as V using ([]; _∷_) renaming (Vec to Vector)
 
 open import Data.Maybe using (Maybe)
 open import Data.Fin using (Fin; zero; suc)
+open import Function as F using ()
 open import Level using (lift) renaming (suc to sucℓ)
 open import Data.Product using (∃-syntax; Σ-syntax; _×_; _,_)
 open import Data.Unit.Polymorphic using () renaming (⊤ to Unit)
@@ -54,13 +55,13 @@ dmap : ∀ {n ℓ} {A : Set ℓ} {v : Vector A n} {f g : (A → Set ℓ)} → (�
 dmap {v = []}    a ⊤       = ⊤
 dmap {v = _ ∷ _} a (x , v) = a x , dmap a v
 
-ddzip : ∀ {n ℓ} {A : Set ℓ} {vo : Vector A n} {vf vg : (A → Set ℓ)} {v : map vf vo} {v′ : map vg vo}
+zip-imply : ∀ {n ℓ} {A : Set ℓ} {vo : Vector A n} {vf vg : (A → Set ℓ)} {v : map vf vo} {v′ : map vg vo}
       → {f g : (∀ {x} → vf x → vg x → Set ℓ)}
       → (∀ {m} {x y} → f {m} x y → g {m} x y)
       → dzip f v v′
       → dzip g v v′
-ddzip {vo = []}    e ⊤       = ⊤
-ddzip {vo = _ ∷ _} e (x , v) = e x , ddzip e v
+zip-imply {vo = []}    e ⊤       = ⊤
+zip-imply {vo = _ ∷ _} e (x , v) = e x , zip-imply e v
 
 zipext : ∀ {n ℓ} {A : Set ℓ} {o : Vector A n} {f : (A → Set ℓ)} {v v′ : map f o}
        → dzip _≡_ v v′
@@ -92,24 +93,26 @@ did : ∀ {n ℓ} {A : Set ℓ} {o : Vector A n} {f : A → Set ℓ} {v : map f 
 did {o = []} = refl
 did {o = _ ∷ _} {v = _ , v} rewrite did {v = v}= refl
 
-zipcomp : ∀ {n ℓ} {A : Set ℓ} {vo : Vector A n} {va vx vy : (A → Set ℓ)} {a : map va vo} {x : map vx vo} {y : map vy vo}
-        → {f : (∀ {x} → vx x → va x → Set ℓ)}
-        → {g : (∀ {x} → va x → vy x → Set ℓ)}
-        → {z : (∀ {x} → vx x → vy x → Set ℓ)}
-        → (e : (∀ {σ} {x y a} → f {σ} x a → g {σ} a y → z {σ} x y))
-        → dzip f x a
-        → dzip g a y
-        → dzip z x y
-zipcomp {vo = []} e ⊤ ⊤ = ⊤
-zipcomp {vo = _ ∷ _} e (x , v) (x′ , v′) = e x x′ , zipcomp e v v′
-
 zipdecomp : ∀ {n ℓ} {A : Set ℓ} {vo : Vector A n} {va vx vy : (A → Set ℓ)} {x : map vx vo} {y : map vy vo}
         → {f : (∀ {x} → vx x → va x → Set ℓ)}
         → {g : (∀ {x} → va x → vy x → Set ℓ)}
-        → {z : (∀ {x} → vx x → vy x → Set ℓ)}
-        → (e : (∀ {σ} {x y} → z {σ} x y → Σ[ a ∈ va σ ] (f {σ} x a × g {σ} a y)))
-        → dzip z x y
+        → dzip (λ x y → ∃[ a ] (f x a × g a y)) x y
         → Σ[ a ∈ map va vo ] (dzip f x a × dzip g a y)
-zipdecomp {vo = []} e ⊤ = ⊤ , ⊤ , ⊤
-zipdecomp {vo = _ ∷ _} e (x , v) with zipdecomp e v | e x
+zipdecomp {vo = []} ⊤ = ⊤ , ⊤ , ⊤
+zipdecomp {vo = _ ∷ _} (x , v) with zipdecomp v | x
 ... | va , vx , vy | a , x , y = (a , va) , (x , vx) , (y , vy)
+
+zipcomp : ∀ {n ℓ} {A : Set ℓ} {vo : Vector A n} {va vx vy : (A → Set ℓ)} {a : map va vo} {x : map vx vo} {y : map vy vo}
+        → {f : (∀ {x} → vx x → va x → Set ℓ)}
+        → {g : (∀ {x} → va x → vy x → Set ℓ)}
+        → dzip f x a → dzip g a y
+        → dzip (λ x y → ∃[ a ] (f x a × g a y)) x y
+zipcomp {vo = []} ⊤ ⊤ = ⊤
+zipcomp {vo = _ ∷ _} (x , v) (x′ , v′) = (_ , x , x′) , zipcomp v v′
+
+op : ∀ {n ℓ} {A : Set ℓ} {vo : Vector A n} {vx vy : (A → Set ℓ)} {x : map vx vo} {y : map vy vo}
+     → {f : (∀ {x} → vx x → vy x → Set ℓ)}
+     → dzip f          x y
+     → dzip (F.flip f) y x
+op {vo = []}    ⊤ = ⊤
+op {vo = _ ∷ _} (x , v) = x , (op v)

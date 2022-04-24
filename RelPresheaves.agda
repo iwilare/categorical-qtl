@@ -52,11 +52,6 @@ record RelPresheaf⇒ (X : RelPresheaf) (U : RelPresheaf) : Set (co ⊔ cℓ) wh
 ⟨_,_⟩ : ∀ {ℓ ℓ′} {A : Set ℓ} {B : Set ℓ′} {a b : A} {c d : B} → a ≡ b → c ≡ d → (a , c) ≡ (b , d)
 ⟨ refl , refl ⟩ = refl
 
-_≈′_ : RelPresheaf → RelPresheaf → Set (suc co)
-X ≈′ U = ∀ σ → X.₀ σ ≡ U.₀ σ
-  where module X = Functor X
-        module U = Functor U
-
 RelPresheaves : Category (suc co ⊔ suc cℓ ⊔ ce) (co ⊔ cℓ) co
 RelPresheaves = record
   { Obj = RelPresheaf

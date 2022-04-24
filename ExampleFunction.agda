@@ -214,6 +214,24 @@ nextStepPreserved = present ∧ ∃◯ present
 nextStepDeallocated : ∀ {τ} → [ -, τ ∷ [] ]
 nextStepDeallocated = present ∧ ∀◯ notPresent
 
+ExampleLoop : Dec (ω₂ ∋ e5 , ⊤ ⊨ loop)
+ExampleLoop = yes refl
+
+ExampleExistsNext : ∀ ω n → Dec (ω ∋ n , ⊤ ⊨ ∃< Node > ((# suc zero ≢ᵗ # zero) ∧ (∃◯ # suc zero ≡ᵗ # zero)))
+ExampleExistsNext ω₀ n0 = yes (n0 , ((λ refl → {!   !}))
+                                          , (((n3 , (n3 , ⊤))
+                                            , (  (n3 , (refl , n0n3))
+                                               , ((n3 , (refl , n0n3))
+                                               , ⊤))
+                                               , refl)
+                                               , ⊤))
+ExampleExistsNext ω₀ n1 = {!   !}
+ExampleExistsNext ω₀ n2 = {!   !}
+ExampleExistsNext ω₁ n3 = {!   !}
+ExampleExistsNext ω₁ n4 = {!   !}
+ExampleExistsNext ω₂ n5 = {!   !}
+
+{-
 NextStepDeallocated : ∀ ω e → Dec (ω ∋ e , ⊤ ⊨ nextStepDeallocated {Edge})
 NextStepDeallocated ω₀ e0 = no λ { ((e0 , refl) , fst₁ , ⊤) → fst₁ (e3 , ⊤) ((e3 , refl , e0e3) , ⊤) e3 refl }
 NextStepDeallocated ω₀ e1 = no λ { ((e0 , ()) , fst₁ , snd₁)
@@ -223,3 +241,4 @@ NextStepDeallocated ω₀ e2 = yes ((e2 , refl) , ((λ { (fst , snd) () b x₁ }
 NextStepDeallocated ω₁ e3 = no {!   !}
 NextStepDeallocated ω₁ e4 = no {!   !}
 NextStepDeallocated ω₂ e5 = no {!   !}
+-}

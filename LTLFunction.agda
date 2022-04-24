@@ -1,4 +1,4 @@
-{-# OPTIONS --sized-types --allow-unsolved-metas #-}
+{-# OPTIONS --sized-types #-}
 
 open import Size
 open import Level
@@ -76,10 +76,10 @@ module LTLFunction {ℓ} {SΣ : Signature {ℓ}} (ℑ : CounterpartWModel SΣ) (
                   → (∃[ n ] (∀ i → i ≤ n → ∃[ zi ] let σ , ρ = comp p i in ⟦ _ ⟧*₁ ρ zi a × σ ∋ zi ⊨ ϕ₁)
                   × (                      ∃[ zn ] let σ , ρ = comp p n in ⟦ _ ⟧*₁ ρ zn a × σ ∋ zn ⊨ ϕ₂))
   ω ∋ a ⊨ ∃◯ ϕ = map (λ { (σ , ρ) →
-                           ∃[ z ]
-                               ⟦ _ ⟧*₁ ρ z a
-                             × σ ∋ z ⊨ ϕ
-                       }) (snd (arrows ω))
+                            ∃[ z ]
+                                ⟦ _ ⟧*₁ ρ z a
+                              × σ ∋ z ⊨ ϕ
+                        }) (snd (arrows ω))
   ω ∋ a ⊨ ∀◯ ϕ = map (λ { (σ , ρ) →
                                ∀ z → ⟦ _ ⟧*₁ ρ z a → σ ∋ z ⊨ ϕ
                              }) (snd (arrows ω))

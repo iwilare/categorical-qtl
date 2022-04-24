@@ -215,7 +215,6 @@ nextStepDeallocated : ∀ {τ} → [ -, τ ∷ [] ]
 nextStepDeallocated = present ∧ ∀◯ notPresent
 
 
-
 ExampleLoop : Dec (ω₂ ∋ e5 , ⊤ ⊨ loop)
 ExampleLoop = yes (⊨≡ refl)
 

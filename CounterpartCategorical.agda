@@ -38,13 +38,13 @@ private
 ⟦_⟧*/ ⟦_⟧ Γ = record
   { F₀ = λ σ → DVec.map (λ Σ → F₀ (⟦ Σ ⟧) σ) Γ
   ; F₁ = λ f → DVec.dzip (F₁ (⟦ _ ⟧) f)
-  ; identity = (λ x → lift (zipext (ddzip (λ {m} x → lower (proj₁ (identity (⟦ m ⟧)) x)) x)))
-             , λ { (lift refl) → ddzip (λ { {m} refl → proj₂ (identity (⟦ m ⟧)) (lift refl) }) dzipid }
-  ; homomorphism = zipdecomp (proj₁ (homomorphism (⟦ _ ⟧)))
-                 , (λ { (_ , b , c) → zipcomp (λ {σ} x x₁ → proj₂ (homomorphism (⟦ σ ⟧)) (_ , (x , x₁))) b c })
+  ; identity = (λ x → lift (zipext (zip-imply (λ y → lower (proj₁ (identity (⟦ _ ⟧)) y)) x)))
+             , λ { (lift refl) → zip-imply (λ { refl → proj₂ (identity (⟦ _ ⟧)) (lift refl) }) dzipid }
+  ; homomorphism = (λ x → zipdecomp (zip-imply (proj₁ (homomorphism (⟦ _ ⟧))) x))
+                 , (λ { (_ , b , c) → zip-imply (proj₂ (homomorphism (⟦ _ ⟧))) (zipcomp b c) })
   ; F-resp-≈ = λ f≈g
-             → (λ { x → ddzip (proj₁ (F-resp-≈ (⟦ _ ⟧) f≈g)) x })
-             , (λ { x → ddzip (proj₂ (F-resp-≈ (⟦ _ ⟧) f≈g)) x })
+             → (λ { x → zip-imply (proj₁ (F-resp-≈ (⟦ _ ⟧) f≈g)) x })
+             , (λ { x → zip-imply (proj₂ (F-resp-≈ (⟦ _ ⟧) f≈g)) x })
   }
 
 record CounterpartWModel {ℓ} (SΣ : Signature {ℓ}) : Set (suc ℓ) where
@@ -67,7 +67,7 @@ record CounterpartWModel {ℓ} (SΣ : Signature {ℓ}) : Set (suc ℓ) where
     I : ∀ (f : 𝓕) → RelPresheaf⇒ ⟦ args f ⟧* ⟦ ret f ⟧
 
   πᵢ : ∀ {n} {Γ : Vector Σ n} → (i : Fin n) → RelPresheaf⇒ (⟦ Γ ⟧*) ⟦ V.lookup Γ i ⟧
-  πᵢ i = record { η = lookup i
+  πᵢ i = record { η    = lookup i
                ; imply = ziplookup i
                }
 
@@ -78,9 +78,9 @@ record CounterpartWModel {ℓ} (SΣ : Signature {ℓ}) : Set (suc ℓ) where
   ⟨_⟩* {Γ′ = V.[]} (lift tt) = record { η = λ _ → lift tt ; imply = λ _ → lift tt }
   ⟨_⟩* {Γ′ = _ V.∷ _} (x , v) =
     let module x = RelPresheaf⇒ x
-        module r = RelPresheaf⇒ (⟨ v ⟩*) in
-      record { η     = < x.η , r.η >
-             ; imply = < x.imply , r.imply >
+        module v = RelPresheaf⇒ (⟨ v ⟩*) in
+      record { η     = < x.η , v.η >
+             ; imply = < x.imply , v.imply >
              }
 
   ⟦_⟧ᵗ : ∀ {i n τ} {Γ : Vector Σ n} → (n , Γ) ⊢ τ ⟨ i ⟩ → RelPresheaf⇒ (⟦ Γ ⟧*) ⟦ τ ⟧

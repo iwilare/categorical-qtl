@@ -4,18 +4,19 @@ open import Data.Vec as V using () renaming (Vec to Vector)
 open import Data.Vec.Membership.Propositional using (_∈_)
 open import Data.List.Relation.Unary.Any using (here; there)
 
-open import DVec
+open import DVec hiding (op)
 
 open import Data.Fin using (Fin)
-open import Data.Nat
+open import Data.Nat using (ℕ)
 open import Data.Maybe using (Maybe)
+open import Function using (flip)
 open import Level renaming (suc to sucℓ)
 open import Data.Product using (∃-syntax; _×_; _,_; -,_) renaming (proj₁ to fst; proj₂ to snd)
 open import Data.Unit.Polymorphic using (⊤; tt)
 open import Relation.Binary.PropositionalEquality using (_≡_; refl; cong)
 open import Size
 open import Function using () renaming (_∘_ to _∘′_)
-open import Relation.Binary
+open import Relation.Binary using (REL)
 
 module _ {ℓ} where
 
@@ -65,13 +66,16 @@ record Σ-Homorel {SΣ : Signature} (A : Σ-Algebra SΣ) (B : Σ-Algebra SΣ) : 
   module B = Σ-Algebra B
 
   field
-    ρ      : {τ : Σ} → REL (A.₀ τ) (B.₀ τ) ℓ
+    ρ      : ∀ {τ} → REL (A.₀ τ) (B.₀ τ) ℓ
     ρ-homo :
       ∀ (f : 𝓕)
       → (as : A.argTypes f)
       → (bs : B.argTypes f)
       → dzip ρ as bs
       → ρ (A.F f as) (B.F f bs)
+
+  op : Σ-Homorel B A
+  op = record { ρ = flip ρ ; ρ-homo = λ f as bs x → ρ-homo f bs as (DVec.op x) }
 
 record Σ-Homomorphism (SΣ : Signature) (A : Σ-Algebra SΣ) (B : Σ-Algebra SΣ) : Set ℓ′ where
 
@@ -81,7 +85,7 @@ record Σ-Homomorphism (SΣ : Signature) (A : Σ-Algebra SΣ) (B : Σ-Algebra S�
   module B = Σ-Algebra B
 
   field
-    h      : {τ : Σ} → A.₀ τ → B.₀ τ
+    h      : ∀ {τ} → A.₀ τ → B.₀ τ
     h-homo :
       ∀ (f : 𝓕)
       → (as : A.argTypes f)
