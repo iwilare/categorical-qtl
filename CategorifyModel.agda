@@ -10,7 +10,10 @@ open import Relation.Binary.PropositionalEquality as _≡_          using (_≡_
 open import Relation.Binary.PropositionalEquality.Properties      using ()
 open import Relation.Binary.Construct.Closure.ReflexiveTransitive using (Star; ε; _◅_; _◅◅_; _▻▻_)
 
-open import DVec using (⊤; dzip; zipdecomp; zipext)
+open import Categories.Functor using (Functor)
+open Categories.Functor.Functor using (F₀; F₁; identity; homomorphism; F-resp-≈)
+
+open import DVec
 open import SortedAlgebra
 open import TemporalStructure
 open import CounterpartAlgebraic
@@ -66,7 +69,7 @@ CategorifyModel {ℓ} {SΣ} 𝔐 =
             star-imply : ∀ {𝑓 σ τ t s} f
                 → dzip (StarRel f) t s
                 → StarRel f (d₁ τ 𝑓 t) (d₁ σ 𝑓 s)
-            star-imply ε       z = cong (d₁ _ _) (zipext z)
+            star-imply ε       z = cong (d₁ _ _) (dzip-ext z)
             star-imply (_ ◅ f) x =
-              let a , b , c = zipdecomp x in
-              d₁ _ _ a , star-imply f b , ρ-homo (op (Σ[ _ ])) _ _ _ c
+              let a , b , c = dzip-rel-decomp x in
+              d₁ _ _ a , star-imply f b , ρ-homo (Σ-Homorel.op (Σ[ _ ])) _ c

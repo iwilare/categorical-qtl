@@ -39,20 +39,20 @@ Con {ℓ} SΣ =
         assoc : ∀ {i τ A B C} {f : Subst A B} {g : Subst B C} (x : A ⊢ τ ⟨ i ⟩)
               → sub (sub g ∘ f) x ≡ sub g (sub f x)
         assoc (var _)   = refl
-        assoc (fun f x) = cong (fun f) (trans (dextf assoc) dcomp)
+        assoc (fun f x) = cong (fun f) (trans (dmap-cong assoc) dmap-comp)
 
         identityʳ : ∀ {i τ A} (x : A ⊢ τ ⟨ i ⟩)
                   → sub var x ≡ idᶠ x
         identityʳ (var _) = refl
-        identityʳ (fun f x) = cong (fun f) (trans (dextf identityʳ) did)
+        identityʳ (fun f x) = cong (fun f) (trans (dmap-cong identityʳ) dmap-id)
 
         identityˡ : ∀ {i τ A} (x : A ⊢ τ ⟨ i ⟩)
                   → sub var x ≡ idᶠ x
         identityˡ (var _) = refl
-        identityˡ (fun f x) = cong (fun f) (trans (dextf identityˡ) did)
+        identityˡ (fun f x) = cong (fun f) (trans (dmap-cong identityˡ) dmap-id)
 
         sub-resp-≈ : ∀ {i τ A B} {f g : Subst A B} (x : A ⊢ τ ⟨ i ⟩)
                    → (∀ {x} → f x ≡ g x)
                    → sub f x ≡ sub g x
         sub-resp-≈ (var _) f≈g = f≈g
-        sub-resp-≈ (fun f x) f≈g = cong (fun f) (dextf λ σ → sub-resp-≈ σ f≈g)
+        sub-resp-≈ (fun f x) f≈g = cong (fun f) (dmap-cong λ σ → sub-resp-≈ σ f≈g)

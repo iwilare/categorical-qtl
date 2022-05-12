@@ -9,27 +9,30 @@ open import DVec hiding (op)
 open import Data.Fin using (Fin)
 open import Data.Nat using (ℕ)
 open import Data.Maybe using (Maybe)
-open import Function using (flip)
 open import Level renaming (suc to sucℓ)
 open import Data.Product using (∃-syntax; _×_; _,_; -,_) renaming (proj₁ to fst; proj₂ to snd)
 open import Data.Unit.Polymorphic using (⊤; tt)
 open import Relation.Binary.PropositionalEquality using (_≡_; refl; cong)
 open import Size
-open import Function using () renaming (_∘_ to _∘′_)
+open import Function using ()
 open import Relation.Binary using (REL)
 
 module _ {ℓ} where
 
 ℓ′ = sucℓ ℓ
 
+infix 4 _⇒_
+
 record FunctionSignature (Σ : Set ℓ) : Set ℓ where
-  constructor from_to_
+  constructor _⇒_
   field
     {arity} : ℕ
     τ*      : Vector Σ arity
     τ       : Σ
 
 record Signature : Set ℓ′ where
+
+  open Function using (_∘_)
   open FunctionSignature
 
   field
@@ -37,8 +40,8 @@ record Signature : Set ℓ′ where
     𝓕 : Set ℓ
     sign : 𝓕 → FunctionSignature Σ
 
-  args = τ* ∘′ sign
-  ret  = τ  ∘′ sign
+  args = τ* ∘ sign
+  ret  = τ  ∘ sign
 
 record Σ-Algebra (SΣ : Signature) : Set ℓ′ where
 
@@ -60,6 +63,7 @@ record Σ-Algebra (SΣ : Signature) : Set ℓ′ where
 
 record Σ-Homorel {SΣ : Signature} (A : Σ-Algebra SΣ) (B : Σ-Algebra SΣ) : Set ℓ′ where
 
+  open Function using (flip; _∘_)
   open Signature SΣ
 
   module A = Σ-Algebra A
@@ -69,13 +73,13 @@ record Σ-Homorel {SΣ : Signature} (A : Σ-Algebra SΣ) (B : Σ-Algebra SΣ) : 
     ρ      : ∀ {τ} → REL (A.₀ τ) (B.₀ τ) ℓ
     ρ-homo :
       ∀ (f : 𝓕)
-      → (as : A.argTypes f)
-      → (bs : B.argTypes f)
+      → {as : A.argTypes f}
+      → {bs : B.argTypes f}
       → dzip ρ as bs
       → ρ (A.F f as) (B.F f bs)
 
   op : Σ-Homorel B A
-  op = record { ρ = flip ρ ; ρ-homo = λ f as bs x → ρ-homo f bs as (DVec.op x) }
+  op = record { ρ = flip ρ ; ρ-homo = λ f → ρ-homo f ∘ DVec.op }
 
 record Σ-Homomorphism (SΣ : Signature) (A : Σ-Algebra SΣ) (B : Σ-Algebra SΣ) : Set ℓ′ where
 
@@ -87,8 +91,8 @@ record Σ-Homomorphism (SΣ : Signature) (A : Σ-Algebra SΣ) (B : Σ-Algebra S�
   field
     h      : ∀ {τ} → A.₀ τ → B.₀ τ
     h-homo :
-      ∀ (f : 𝓕)
-      → (as : A.argTypes f)
+      ∀ {f : 𝓕}
+      → {as : A.argTypes f}
       → h (A.F f as) ≡ B.F f (dmap h as)
 
 module Terms (SΣ : Signature) where

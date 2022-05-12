@@ -21,7 +21,8 @@ private
 
 map : (A → Set ℓ′) → Vector A n → Set ℓ′
 map f [] = Unit
-map f (x ∷ v) = f x × map f v
+map f (x ∷ []) = f x
+map f (x ∷ (y ∷ v)) = f x × map f (y ∷ v)
 
 zip : (A → B → Set ℓ′) → Vector A n → Vector B n → Set ℓ′
 zip f [] [] = Unit
@@ -29,30 +30,33 @@ zip f (x ∷ v) (x′ ∷ v′) = f x x′ × zip f v v′
 
 dmap : ∀ {o : Vector A n} {f g : (A → Set ℓ′)} → (∀ {x} → f x → g x) → map f o → map g o
 dmap {o = []} a ⊤ = ⊤
-dmap {o = _ ∷ _} a (x , v) = a x , dmap a v
+dmap {o = _ ∷ []} a x = a x
+dmap {o = _ ∷ (_ ∷ o)} a (x , v) = a x , dmap {o = _ ∷ o} a v
 
 dzip : ∀ {o : Vector A n} {f g : (A → Set ℓ′)} → (∀ {x} → f x → g x → Set ℓ) → map f o → map g o → Set ℓ
 dzip {o = []} a ⊤ ⊤ = Unit
-dzip {o = _ ∷ _} a (x , v) (x′ , v′) = a x x′ × dzip a v v′
+dzip {o = _ ∷ []} a x x′ = a x x′
+dzip {o = _ ∷ (_ ∷ o)} a (x , v) (x′ , v′) = a x x′ × dzip {o = _ ∷ o} a v v′
 
 lookup : ∀ {o : Vector A n} {f : (A → Set ℓ)} → (i : Fin n) → map f o → f (V.lookup o i)
-lookup {o = _ ∷ _} zero (x , v) = x
-lookup {o = _ ∷ _} (suc i) (x , v) = lookup i v
+lookup {o = _ ∷ []} zero x = x
+lookup {o = _ ∷ (_ ∷ _)} zero (x , v) = x
+lookup {o = _ ∷ (_ ∷ o)} (suc i) (x , v) = lookup {o = _ ∷ o} i v
 
 lookup-dzip : ∀ {o : Vector A n} {f g : (A → Set ℓ)} {v : map f o} {v′ : map g o} {ρ : ∀ {x} → f x → g x → Set ℓ}
           → (i : Fin n)
-          → dzip ρ v v′
-          → ρ (lookup i v) (lookup i v′)
-lookup-dzip {o = _ ∷ _} zero (x , v) = x
-lookup-dzip {o = _ ∷ _} (suc i) (x , v) = lookup-dzip i v
+          → dzip {o = o} ρ v v′
+          → ρ (lookup {o = o} i v) (lookup {o = o} i v′)
+lookup-dzip {o = _ ∷ []} zero p = p
+lookup-dzip {o = _ ∷ _ ∷ o} zero (x , v) = x
+lookup-dzip {o = _ ∷ _ ∷ o} (suc i) (x , v) = lookup-dzip {o = _ ∷ o} i v
 
-dzip-imply : ∀ {n ℓ} {A : Set ℓ} {o : Vector A n} {f g : (A → Set ℓ)} {v : map f o} {v′ : map g o} {s t : (∀ {x} → f x → g x → Set ℓ)}
+dzip-imply : ∀ {o : Vector A n} {f g : (A → Set ℓ)} {v : map f o} {v′ : map g o} {s t : (∀ {x} → f x → g x → Set ℓ)}
       → (∀ {m} {x y} → s {m} x y → t {m} x y)
-      → dzip s v v′
-      → dzip t v v′
-dzip-imply {o = []} e ⊤ = ⊤
-dzip-imply {o = _ ∷ _} e (x , v) = e x , dzip-imply e v
-
+      → dzip {o = o} s v v′
+      → dzip {o = o} t v v′
+dzip-imply = {!   !}
+{-
 dzip-ext : ∀ {o : Vector A n} {f : (A → Set ℓ)} {v v′ : map f o}
          → dzip _≡_ v v′
          → v ≡ v′
@@ -68,7 +72,7 @@ dmap-cong : ∀ {o : Vector A n} {f g : A → Set ℓ} {v : map f o} {f g : (∀
           → (e : ∀ {x} σ → f {x} σ ≡ g {x} σ)
           → dmap f v ≡ dmap g v
 dmap-cong {o = []} e = refl
-dmap-cong {o = _ ∷ _} {v = x , v} e rewrite e x | dmap-cong {v = v} e = refl
+dmap-cong {o = _ ∷ o} {v = x , v} e rewrite e x | dmap-cong {o = o} {v = v} e = refl
 
 dmap-comp : ∀ {o : Vector A n} {i j k : A → Set ℓ} {v : map i o} {f : (∀ {x} → j x → k x)} {g : (∀ {x} → i x → j x)}
           → dmap (f ∘ g) v ≡ dmap f (dmap g v)
@@ -103,3 +107,4 @@ op : ∀ {o : Vector A n} {f g : (A → Set ℓ)} {x : map f o} {y : map g o}
      → dzip (F.flip f) y x
 op {o = []} ⊤ = ⊤
 op {o = _ ∷ _} (x , v) = x , (op v)
+-}

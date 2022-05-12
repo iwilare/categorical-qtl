@@ -25,8 +25,8 @@ record CounterpartFrame {ℓ} : Set (suc ℓ) where
 record CounterpartModel {ℓ} (SΣ : Signature {ℓ}) : Set (suc ℓ)  where
   open Signature SΣ
   field
-    W   : Set ℓ
-    d   : W → Σ-Algebra SΣ
+    W : Set ℓ
+    d : W → Σ-Algebra SΣ
     _⇝_ : Rel W ℓ
     Σ[_] : ∀ {w₁ w₂}
          → w₁ ⇝ w₂

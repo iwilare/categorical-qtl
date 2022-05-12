@@ -10,11 +10,10 @@ open import Data.Product using (_,_; -,_; ∃-syntax) renaming (proj₁ to fst; 
 
 record TemporalStructure {co cℓ ce} (W : Category co cℓ ce) : Set (co ⊔ cℓ) where
   constructor TStructure
-
   open Category W
 
   field
-    arrows : (A : Obj) → ∃[ n ] (Vector (∃[ B ] (A ⇒ B)) n)
+    arrows : (A : Obj) → ∃[ n ] Vector (∃[ B ] (A ⇒ B)) n
 
   record Path (A : Obj) : Set (co ⊔ cℓ) where
     constructor _⟶_

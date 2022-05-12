@@ -8,6 +8,8 @@ open import Data.Product using (∃-syntax; _,_; -,_; _×_) renaming (proj₁ to
 open import Data.Sum     using (_⊎_; inj₁; inj₂)
 open import Data.Vec     using (Vec; _∷_)
 open import Relation.Binary.PropositionalEquality using (_≡_; _≢_)
+open import Data.Unit.Polymorphic renaming (⊤ to True)
+open import Relation.Nullary using (¬_)
 
 open import Categories.Category
 open import Categories.Functor
@@ -31,10 +33,13 @@ module LTL {ℓ} {SΣ : Signature {ℓ}} (ℑ : CounterpartWModel SΣ) (T : Temp
     _∧_ : ∀ {Γ} → [ Γ ] → [ Γ ] → [ Γ ]
     _∨_ : ∀ {Γ} → [ Γ ] → [ Γ ] → [ Γ ]
     _U_ : ∀ {Γ} → [ Γ ] → [ Γ ] → [ Γ ]
-    ∃◯_ : ∀ {Γ} → [ Γ ] → [ Γ ]
+    ∃◯_  : ∀ {Γ} → [ Γ ] → [ Γ ]
     ∀◯_ : ∀ {Γ} → [ Γ ] → [ Γ ]
+    ∃C◯_  : ∀ {Γ} → [ Γ ] → [ Γ ]
+    ∀C◯_ : ∀ {Γ} → [ Γ ] → [ Γ ]
     ◇_  : ∀ {Γ} → [ Γ ] → [ Γ ]
     □_  : ∀ {Γ} → [ Γ ] → [ Γ ]
+    neg : ∀ {Γ} → [ Γ ] → [ Γ ]
     ∃<_>_ : ∀ {n} {Γ : Vec Σ n}
         → (τ : Σ)
         → [ -, τ ∷ Γ ]
@@ -55,7 +60,7 @@ module LTL {ℓ} {SΣ : Signature {ℓ}} (ℑ : CounterpartWModel SΣ) (T : Temp
         → [ Γ ]
 
   infix 15 _∧_ _∨_
-  infix 20 ◇_ □_ ∃◯_ ∀◯_ _U_
+  infix 20 ◇_ □_ ∃◯_ ∀◯_ ∃C◯_ ∀C◯_ _U_
   infix 23 ∃<_>_ ∀<_>_
   infix 25 _≡ᵗ_ _≢ᵗ_
 
@@ -67,49 +72,26 @@ module LTL {ℓ} {SΣ : Signature {ℓ}} (ℑ : CounterpartWModel SΣ) (T : Temp
 
   infix 10 _∋_⊨_
 
-  data _∋_⊨_ {n} {Γ : Vec Σ n} : ∀ ω → ⟦ Γ ⟧*₀ ω → [ -, Γ ] → Set ℓ where
+  count : ∀ {n} {Γ : Vec Σ n} {ω σ} → ω ⇒ σ → ⟦ Γ ⟧*₀ ω → Set ℓ
+  count ρ a = ∃[ z ] ⟦ _ ⟧*₁ ρ z a
 
-     ⊨⊤   : ∀ {ω} {a : ⟦ Γ ⟧*₀ ω}
-          → ω ∋ a ⊨ true
-
-     ⊨∧   : ∀ {ω} {a : ⟦ Γ ⟧*₀ ω} {ϕ₁ ϕ₂ : [ -, Γ ]}
-          → ω ∋ a ⊨ ϕ₁ × ω ∋ a ⊨ ϕ₂
-          → ω ∋ a ⊨ ϕ₁ ∧ ϕ₂
-     ⊨∨   : ∀ {ω} {a : ⟦ Γ ⟧*₀ ω} {ϕ₁ ϕ₂ : [ -, Γ ]}
-          → ω ∋ a ⊨ ϕ₁ ⊎ ω ∋ a ⊨ ϕ₂
-          → ω ∋ a ⊨ ϕ₁ ∨ ϕ₂
-
-     ⊨∀   : ∀ {ω τ} {a : ⟦ Γ ⟧*₀ ω} {ϕ : [ -, τ ∷ Γ ]}
-          → (∀ b → ω ∋ (b , a) ⊨ ϕ)
-          → ω ∋ a ⊨ ∀< τ > ϕ
-     ⊨∃   : ∀ {ω τ} {a : ⟦ Γ ⟧*₀ ω} {ϕ : [ -, τ ∷ Γ ]}
-          → (∃[ b ] ω ∋ (b , a) ⊨ ϕ)
-          → ω ∋ a ⊨ ∃< τ > ϕ
-
-     ⊨∃◯  : ∀ {ω} {a : ⟦ Γ ⟧*₀ ω} {ϕ : [ -, Γ ]}
-          → map (λ { (σ , ρ) → ∃[ z ] ⟦ Γ ⟧*₁ ρ z a × σ ∋ z ⊨ ϕ }) (snd (arrows ω))
-          → ω ∋ a ⊨ ∃◯ ϕ
-     ⊨∀◯  : ∀ {ω} {a : ⟦ Γ ⟧*₀ ω} {ϕ : [ -, Γ ]}
-          → map (λ { (σ , ρ) → ∀ z → ⟦ Γ ⟧*₁ ρ z a → σ ∋ z ⊨ ϕ }) (snd (arrows ω))
-          → ω ∋ a ⊨ ∀◯ ϕ
-
-     ⊨U   : ∀ {ω} {a : ⟦ Γ ⟧*₀ ω} {ϕ₁ ϕ₂ : [ -, Γ ]}
-          → (p : Path ω)
-          → (∃[ n ] (∀ i → i ≤ n → ∃[ zi ] let σ , ρ = comp p i in ⟦ Γ ⟧*₁ ρ zi a × σ ∋ zi ⊨ ϕ₁)
-                  × (              ∃[ zn ] let σ , ρ = comp p n in ⟦ Γ ⟧*₁ ρ zn a × σ ∋ zn ⊨ ϕ₂))
-          → ω ∋ a ⊨ ϕ₁ U ϕ₂
-     ⊨□   : ∀ {ω} {a : ⟦ Γ ⟧*₀ ω} {ϕ : [ -, Γ ]}
-          → (p : Path ω)
-          → (∀ n  → ∃[ z ] let σ , ρ = comp p n in ⟦ Γ ⟧*₁ ρ z a × σ ∋ z ⊨ ϕ)
-          → ω ∋ a ⊨ □ ϕ
-     ⊨◇   : ∀ {ω} {a : ⟦ Γ ⟧*₀ ω} {ϕ : [ -, Γ ]}
-          → (p : Path ω)
-          → (∃[ n ] ∃[ z ] let σ , ρ = comp p n in ⟦ Γ ⟧*₁ ρ z a × σ ∋ z ⊨ ϕ)
-          → ω ∋ a ⊨ ◇ ϕ
-
-     ⊨≡   : ∀ {ω τ i} {a : ⟦ Γ ⟧*₀ ω} {t₁ t₂ : (n , Γ) ⊢ τ ⟨ i ⟩}
-          → η (⟦ t₁ ⟧ᵗ) a ≡ η (⟦ t₂ ⟧ᵗ) a
-          → ω ∋ a ⊨ (t₁ ≡ᵗ t₂)
-     ⊨≢   : ∀ {ω τ i} {a : ⟦ Γ ⟧*₀ ω} {t₁ t₂ : (n , Γ) ⊢ τ ⟨ i ⟩}
-          → η (⟦ t₁ ⟧ᵗ) a ≢ η (⟦ t₂ ⟧ᵗ) a
-          → ω ∋ a ⊨ (t₁ ≢ᵗ t₂)
+  _∋_⊨_ : ∀ {n} {Γ : Vec Σ n} ω → ⟦ Γ ⟧*₀ ω → [ -, Γ ] → Set ℓ
+  ω ∋ a ⊨ true = True
+  ω ∋ a ⊨ ϕ₁ ∧ ϕ₂ = ω ∋ a ⊨ ϕ₁ × ω ∋ a ⊨ ϕ₂
+  ω ∋ a ⊨ ϕ₁ ∨ ϕ₂ = ω ∋ a ⊨ ϕ₁ ⊎ ω ∋ a ⊨ ϕ₂
+  ω ∋ a ⊨ ϕ₁ U ϕ₂ = ∀ (p : Path ω)
+                  → (∃[ n ] (∀ i → i ≤ n → ∃[ zi ] let σ , ρ = comp p i in ⟦ _ ⟧*₁ ρ zi a × σ ∋ zi ⊨ ϕ₁)
+                  × (                      ∃[ zn ] let σ , ρ = comp p n in ⟦ _ ⟧*₁ ρ zn a × σ ∋ zn ⊨ ϕ₂))
+  ω ∋ a ⊨ ∃◯ ϕ = map (λ { (σ , ρ) → ∀ ((z , _) : count ρ a) → σ ∋ z ⊨ ϕ }) (snd (arrows ω))
+  ω ∋ a ⊨ ∀◯ ϕ = map (λ { (σ , ρ) → ∀ z → ⟦ _ ⟧*₁ ρ z a → σ ∋ z ⊨ ϕ }) (snd (arrows ω))
+  ω ∋ a ⊨ ∃C◯ ϕ = True
+  ω ∋ a ⊨ ∀C◯ ϕ = True
+  ω ∋ a ⊨ ◇ ϕ = ∀ (p : Path ω)
+                   → (∃[ n ] ∃[ z ] let σ , ρ = comp p n in ⟦ _ ⟧*₁ ρ z a × σ ∋ z ⊨ ϕ)
+  ω ∋ a ⊨ □ ϕ = ∀ (p : Path ω)
+                   → (∀ n  → ∃[ z ] let σ , ρ = comp p n in ⟦ _ ⟧*₁ ρ z a × σ ∋ z ⊨ ϕ)
+  ω ∋ a ⊨ ∃< τ > ϕ = (∃[ b ] ω ∋ (b , a) ⊨ ϕ)
+  ω ∋ a ⊨ ∀< τ > ϕ = (∀ b → ω ∋ (b , a) ⊨ ϕ)
+  ω ∋ a ⊨ t₁ ≡ᵗ t₂ = η (⟦ t₁ ⟧ᵗ) a ≡ η (⟦ t₂ ⟧ᵗ) a
+  ω ∋ a ⊨ t₁ ≢ᵗ t₂ = η (⟦ t₁ ⟧ᵗ) a ≢ η (⟦ t₂ ⟧ᵗ) a
+  ω ∋ a ⊨ neg ϕ = ¬ (ω ∋ a ⊨ ϕ)
