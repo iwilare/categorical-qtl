@@ -19,7 +19,6 @@ open import TemporalStructure
 open import CounterpartAlgebraic
 open import CounterpartCategorical
 open import RelPresheaves
-open import FreeCategory
 
 open import Categories.Category using (Category)
 

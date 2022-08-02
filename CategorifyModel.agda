@@ -6,12 +6,17 @@ open import Level           using (lift)
 open import Function        using (flip; id)
 open import Relation.Binary using (Rel; REL)
 open import Relation.Binary.Construct.Composition                 using (_;_)
-open import Relation.Binary.PropositionalEquality as _≡_          using (_≡_; refl; cong)
-open import Relation.Binary.PropositionalEquality.Properties      using ()
+open import Relation.Binary.PropositionalEquality as _≡_          using (_≡_; refl; cong; cong₂)
+open import Relation.Binary.PropositionalEquality.Properties      using (isEquivalence)
 open import Relation.Binary.Construct.Closure.ReflexiveTransitive using (Star; ε; _◅_; _◅◅_; _▻▻_)
 
+open import Data.Quiver
+open import Data.Quiver.Paths
+open import Categories.Category.Construction.PathCategory
+
+open import Categories.Category using (_[_≈_])
 open import Categories.Functor using (Functor)
-open Categories.Functor.Functor using (F₀; F₁; identity; homomorphism; F-resp-≈)
+open Categories.Functor.Functor using (F₀; F₁; identity; homomorphism)
 
 open import DVec
 open import SortedAlgebra
@@ -19,7 +24,6 @@ open import TemporalStructure
 open import CounterpartAlgebraic
 open import CounterpartCategorical
 open import RelPresheaves
-open import FreeCategory
 
 open import Categories.Category using (Category)
 
@@ -28,7 +32,12 @@ CategorifyModel : ∀ {ℓ} {SΣ : Signature {ℓ}}
                 → CounterpartWModel SΣ
 CategorifyModel {ℓ} {SΣ} 𝔐 =
   record
-    { W = FreeCategory W _⇝_
+    { W = PathCategory (record
+            { Obj = W
+            ; _⇒_ = _⇝_
+            ; _≈_ = _≡_
+            ; equiv = isEquivalence
+            })
     ; ⟦_⟧ =
       λ τ →
         record
@@ -36,7 +45,7 @@ CategorifyModel {ℓ} {SΣ} 𝔐 =
           ; F₁ = StarRel
           ; identity = (λ { refl → lift refl }) , λ { (lift refl) → refl }
           ; homomorphism = λ { {g = g} → star-homomorphism g }
-          ; F-resp-≈ = λ { refl → id , id }
+          ; F-resp-≈ = StarRel-resp-≈*
           }
     ; I =
       λ 𝑓 →
@@ -73,3 +82,20 @@ CategorifyModel {ℓ} {SΣ} 𝔐 =
             star-imply (_ ◅ f) x =
               let a , b , c = dzip-rel-decomp x in
               d₁ _ _ a , star-imply f b , ρ-homo (Σ-Homorel.op (Σ[ _ ])) _ c
+
+            open Paths (record { Obj = W ; _⇒_ = _⇝_ ; _≈_ = _≡_ ; equiv = isEquivalence }) using (_≈*_; ε; _◅_)
+
+            ≡-chain : {A B : W} {f g : Star _⇝_ B A}
+                    → f ≈* g
+                    → f ≡ g
+            ≡-chain ε = refl
+            ≡-chain (x≈y ◅ x) = cong₂ _◅_ x≈y (≡-chain x)
+
+            StarRel-resp-≈* : ∀ {τ} {A B} {f g : Star _⇝_ B A}
+                    → f ≈* g
+                    → Rels ℓ ℓ [ StarRel {τ} f ≈ StarRel {τ} g ]
+            StarRel-resp-≈* f≈*g with ≡-chain f≈*g
+            ... | refl = id , id
+
+_* : ∀ {ℓ} {A : Set ℓ} {i j} {T : Rel A ℓ} → T i j → Star T i j
+a * = a ◅ ε

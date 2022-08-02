@@ -3,8 +3,9 @@
 open import Level
 open import Categories.Category
 
-open import Data.Vec as V using () renaming (Vec to Vector)
+open import Data.Vec as V using ([_]) renaming (Vec to Vector)
 open import Data.Vec.Membership.Propositional
+open import Relation.Binary.PropositionalEquality using (_≡_)
 open import Data.Nat using (ℕ; zero; suc)
 open import Data.Product using (_,_; -,_; ∃-syntax) renaming (proj₁ to fst; proj₂ to snd)
 

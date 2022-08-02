@@ -16,7 +16,6 @@ open import Relation.Binary.Construct.Closure.ReflexiveTransitive using (Star; Î
 open import Categories.Category.Instance.Rels using (Rels)
 open import Categories.Category
 
-open import FreeCategory
 open import Utils
 open import SortedAlgebra
 open import TemporalStructure

@@ -18,9 +18,6 @@ open import Categories.Functor hiding (id)
 open import Categories.Functor.Properties
 open import Categories.Functor.Presheaf
 
-import Categories.Category.Monoidal.Instance.Rels as T
-import Categories.Category.Construction.Properties.Presheaves.Cartesian as K
-
 open import Function using (id; _∘_)
 open import Data.Product
 open import Data.Bool
@@ -29,7 +26,7 @@ open import Utils
 
 private
   variable
-    ℓ : Level
+    o ℓ e : Level
     o′ ℓ′ : Level
     o″ ℓ″ : Level
 

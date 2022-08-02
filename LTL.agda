@@ -4,12 +4,13 @@ open import Size
 open import Level
 
 open import Data.Nat     using (ℕ; _≤_)
-open import Data.Product using (∃-syntax; _,_; -,_; _×_) renaming (proj₁ to fst; proj₂ to snd)
+open import Data.Product using (∃-syntax; Σ-syntax; _,_; -,_; _×_) renaming (proj₁ to fst; proj₂ to snd)
 open import Data.Sum     using (_⊎_; inj₁; inj₂)
-open import Data.Vec     using (Vec; _∷_)
+open import Data.Vec     as V using (Vec; _∷_)
 open import Relation.Binary.PropositionalEquality using (_≡_; _≢_)
 open import Data.Unit.Polymorphic renaming (⊤ to True)
 open import Relation.Nullary using (¬_)
+open import Relation.Nullary.Negation using (contradiction)
 
 open import Categories.Category
 open import Categories.Functor
@@ -19,6 +20,7 @@ open import RelPresheaves
 open import CounterpartCategorical
 open import TemporalStructure
 open import DVec
+open import Utils
 
 module LTL {ℓ} {SΣ : Signature {ℓ}} (ℑ : CounterpartWModel SΣ) (T : TemporalStructure (CounterpartWModel.W ℑ)) where
   open CounterpartWModel ℑ
@@ -82,8 +84,8 @@ module LTL {ℓ} {SΣ : Signature {ℓ}} (ℑ : CounterpartWModel SΣ) (T : Temp
   ω ∋ a ⊨ ϕ₁ U ϕ₂ = ∀ (p : Path ω)
                   → (∃[ n ] (∀ i → i ≤ n → ∃[ zi ] let σ , ρ = comp p i in ⟦ _ ⟧*₁ ρ zi a × σ ∋ zi ⊨ ϕ₁)
                   × (                      ∃[ zn ] let σ , ρ = comp p n in ⟦ _ ⟧*₁ ρ zn a × σ ∋ zn ⊨ ϕ₂))
-  ω ∋ a ⊨ ∃◯ ϕ = map (λ { (σ , ρ) → ∀ ((z , _) : count ρ a) → σ ∋ z ⊨ ϕ }) (snd (arrows ω))
-  ω ∋ a ⊨ ∀◯ ϕ = map (λ { (σ , ρ) → ∀ z → ⟦ _ ⟧*₁ ρ z a → σ ∋ z ⊨ ϕ }) (snd (arrows ω))
+  ω ∋ a ⊨ ∃◯ ϕ = map (λ { (σ , ρ) → Σ[ (z , _) ∈ count ρ a ] (∀ ((z , _) : count ρ a) → σ ∋ z ⊨ ϕ) }) (snd (arrows ω))
+  ω ∋ a ⊨ ∀◯ ϕ = map (λ { (σ , ρ) →                          (∀ ((z , _) : count ρ a) → σ ∋ z ⊨ ϕ) }) (snd (arrows ω))
   ω ∋ a ⊨ ∃C◯ ϕ = True
   ω ∋ a ⊨ ∀C◯ ϕ = True
   ω ∋ a ⊨ ◇ ϕ = ∀ (p : Path ω)
