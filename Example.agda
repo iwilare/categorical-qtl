@@ -222,11 +222,9 @@ ExampleExistsNext ω₁ n4 = {!   !}
 ExampleExistsNext ω₂ n5 = {!   !}
 
 NextStepDeallocated : ∀ ω e → Dec (ω ∋ e , ⊤ ⊨ nextStepDeallocated {Edge})
-NextStepDeallocated ω₀ e0 = no λ { ((e0 , refl) , fst₁ , ⊤) → fst₁ (e3 , ⊤) ((e3 , refl , e0e3) , ⊤) e3 refl }
-NextStepDeallocated ω₀ e1 = no λ { ((e0 , ()) , fst₁ , snd₁)
-                                 ; ((e1 , refl) , fst₁ , snd₁) → fst₁ {!   !} {!   !} {!   !} {!   !}
-                                 ; ((e2 , ()) , fst₁ , snd₁) }
-NextStepDeallocated ω₀ e2 = yes ((e2 , refl) , ((λ { (fst , snd) () b x₁ }) , ⊤))
+NextStepDeallocated ω₀ e0 = {!   !}
+NextStepDeallocated ω₀ e1 = {!   !}
+NextStepDeallocated ω₀ e2 = {!   !}
 NextStepDeallocated ω₁ e3 = no {!   !}
 NextStepDeallocated ω₁ e4 = no {!   !}
 NextStepDeallocated ω₂ e5 = no {!   !}
