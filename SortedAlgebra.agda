@@ -1,15 +1,15 @@
 {-# OPTIONS --sized-types #-}
 
-open import Data.Vec as V using () renaming (Vec to Vector)
+open import Data.Vec as V using (_∷_) renaming (Vec to Vector)
 open import Data.Vec.Membership.Propositional using (_∈_)
 open import Data.List.Relation.Unary.Any using (here; there)
 
 open import DVec hiding (op)
 
-open import Data.Fin using (Fin)
+open import Data.Fin using (Fin; suc; zero)
 open import Data.Nat using (ℕ)
 open import Data.Maybe using (Maybe)
-open import Level renaming (suc to sucℓ)
+open import Level using () renaming (suc to sucℓ)
 open import Data.Product using (∃-syntax; _×_; _,_; -,_) renaming (proj₁ to fst; proj₂ to snd)
 open import Data.Unit.Polymorphic using (⊤; tt)
 open import Relation.Binary.PropositionalEquality using (_≡_; refl; cong)
@@ -143,3 +143,9 @@ module Terms (SΣ : Signature) where
 
   _∘_ : ∀ {A B C} → Subst B C → Subst A B → Subst A C
   (f ∘ g) i = sub f (g i)
+
+  v0 : ∀ {n} {Γ : Vector Σ n} {τ} → (-, τ V.∷ Γ) ⊢ τ
+  v0 = # zero
+
+  v1 : ∀ {n} {Γ : Vector Σ n} {τ τ′} → (-, τ V.∷ τ′ V.∷ Γ) ⊢ τ′
+  v1 = # suc zero

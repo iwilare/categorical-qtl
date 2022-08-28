@@ -1,9 +1,9 @@
 {-# OPTIONS --sized-types #-}
 
 open import Data.Vec        using (Vec; _∷_; [])
-open import Data.Product    using (_,_; -,_)
+open import Data.Product    using (Σ; _,_; -,_)
 open import Data.Unit.Base  using (tt)
-open import Data.Fin        using (suc; zero)
+open import Data.Fin        using (Fin; suc; zero)
 open import Level           using (lift)
 open import Function        using (_∘_; flip)
 open import Relation.Binary using (Rel)
@@ -210,17 +210,26 @@ nextStepPreserved = present ∧ ∃◯ present
 nextStepDeallocated : ∀ {τ} → [ -, τ ∷ [] ]
 nextStepDeallocated = present ∧ ∀◯ notPresent
 
-ExampleLoop : Dec (ω₂ ∋ e5 , ⊤ ⊨ loop)
-ExampleLoop = yes refl
+existsNextMerged : [ -, Node ∷ [] ]
+existsNextMerged = ∃< Node > ((v1 ≢ᵗ v0) ∧ (∃◯ v1 ≡ᵗ v0))
 
-ExampleExistsNext : ∀ ω n → Dec (ω ∋ n , ⊤ ⊨ ∃< Node > ((# suc zero ≢ᵗ # zero) ∧ (∃◯ # suc zero ≡ᵗ # zero)))
-ExampleExistsNext ω₀ n0 = {!   !}
-ExampleExistsNext ω₀ n1 = {!   !}
-ExampleExistsNext ω₀ n2 = {!   !}
-ExampleExistsNext ω₁ n3 = {!   !}
-ExampleExistsNext ω₁ n4 = {!   !}
-ExampleExistsNext ω₂ n5 = {!   !}
+ExampleLoop : DecidableFormula loop
+ExampleLoop ω₂ (e5 , ⊤)  = yes refl
+ExampleLoop ω₀ (e0 , ⊤) = no (λ ())
+ExampleLoop ω₀ (e1 , ⊤) = no (λ ())
+ExampleLoop ω₀ (e2 , ⊤) = no (λ ())
+ExampleLoop ω₁ (e3 , ⊤) = no (λ ())
+ExampleLoop ω₁ (e4 , ⊤) = no (λ ())
 
+ExampleExistsNextMerged : DecidableFormula existsNextMerged
+ExampleExistsNextMerged ω₀ (n0 , ⊤) = {!   !}
+ExampleExistsNextMerged ω₀ (n1 , ⊤) = {!   !}
+ExampleExistsNextMerged ω₀ (n2 , ⊤) = {!   !}
+ExampleExistsNextMerged ω₁ (n3 , ⊤) = {!   !}
+ExampleExistsNextMerged ω₁ (n4 , ⊤) = {!   !}
+ExampleExistsNextMerged ω₂ (n5 , ⊤) = {!   !}
+
+{-
 NextStepDeallocated : ∀ ω e → Dec (ω ∋ e , ⊤ ⊨ nextStepDeallocated {Edge})
 NextStepDeallocated ω₀ e0 = {!   !}
 NextStepDeallocated ω₀ e1 = {!   !}
@@ -228,3 +237,4 @@ NextStepDeallocated ω₀ e2 = {!   !}
 NextStepDeallocated ω₁ e3 = no {!   !}
 NextStepDeallocated ω₁ e4 = no {!   !}
 NextStepDeallocated ω₂ e5 = no {!   !}
+-}
