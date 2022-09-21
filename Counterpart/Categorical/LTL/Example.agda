@@ -176,7 +176,7 @@ M : CounterpartModel Gr
 M = record { W = W ; d = d ; _⇝_ = _⇝_ ; f = f }
 
 TWM : TemporalCounterpartWModel Gr
-TWM = CategorifyModel M
+TWM = ClassicalToCategorical M
 
 module TWM = TemporalCounterpartWModel TWM
 

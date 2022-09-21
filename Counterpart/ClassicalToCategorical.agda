@@ -30,9 +30,9 @@ open import Counterpart.Classical
 open import RelPresheaves
 open import VecT
 
-CategorifyModel : CounterpartModel Σ
-                → TemporalCounterpartWModel Σ
-CategorifyModel M =
+ClassicalToCategorical : CounterpartModel Σ
+                       → TemporalCounterpartWModel Σ
+ClassicalToCategorical M =
   record
     { M = record
       { W = PathCategory
