@@ -1,151 +1,107 @@
 {-# OPTIONS --sized-types #-}
 
-open import Data.Vec as V using (_∷_) renaming (Vec to Vector)
-open import Data.Vec.Membership.Propositional using (_∈_)
-open import Data.List.Relation.Unary.Any using (here; there)
+module SortedAlgebra {ℓ} where
 
-open import DVec hiding (op)
-
-open import Data.Fin using (Fin; suc; zero)
+import Function 
+open import Data.Fin using (Fin)
 open import Data.Nat using (ℕ)
-open import Data.Maybe using (Maybe)
+open import Data.Vec using (Vec; lookup)
 open import Level using () renaming (suc to sucℓ)
-open import Data.Product using (∃-syntax; _×_; _,_; -,_) renaming (proj₁ to fst; proj₂ to snd)
-open import Data.Unit.Polymorphic using (⊤; tt)
-open import Relation.Binary.PropositionalEquality using (_≡_; refl; cong)
-open import Size
-open import Function using ()
 open import Relation.Binary using (REL)
+open import Size
 
-module _ {ℓ} where
+open import VecT using (zip; mapT; map)
 
-ℓ′ = sucℓ ℓ
-
-infix 4 _⇒_
-
-record FunctionSignature (Σ : Set ℓ) : Set ℓ where
-  constructor _⇒_
+record FunctionSignature (𝓢 : Set ℓ) : Set ℓ where
+  constructor _↦_
   field
-    {arity} : ℕ
-    τ*      : Vector Σ arity
-    τ       : Σ
+      {arity} : ℕ
+      τ*      : Vec 𝓢 arity
+      τ       : 𝓢
 
-record Signature : Set ℓ′ where
+infix 4 _↦_
 
-  open Function using (_∘_)
+record Signature : Set (sucℓ ℓ) where
+
   open FunctionSignature
 
   field
-    Σ : Set ℓ
+    𝓢 : Set ℓ
     𝓕 : Set ℓ
-    sign : 𝓕 → FunctionSignature Σ
+    sign𝓕 : 𝓕 → FunctionSignature 𝓢
 
-  args = τ* ∘ sign
-  ret  = τ  ∘ sign
+  open Function using (_∘_)
 
-record Σ-Algebra (SΣ : Signature) : Set ℓ′ where
+  args = τ* ∘ sign𝓕
+  ret  = τ  ∘ sign𝓕
 
-  open Signature SΣ
+record Σ-Algebra (Σ : Signature) : Set (sucℓ ℓ) where
+
+  open Signature Σ
 
   field
-    S : Σ → Set ℓ
+    S : 𝓢 → Set ℓ
 
-  ₀ = S
-
-  argTypes : 𝓕 → Set ℓ
-  argTypes f = map S (args f)
+  argType : 𝓕 → Set ℓ
+  argType f = mapT S (args f)
 
   retType : 𝓕 → Set ℓ
   retType f = S (ret f)
 
   field
-    F : ∀ (f : 𝓕) → argTypes f → retType f
+    F : ∀ (f : 𝓕) → argType f → retType f
 
-record Σ-Homorel {SΣ : Signature} (A : Σ-Algebra SΣ) (B : Σ-Algebra SΣ) : Set ℓ′ where
+record Σ-Rel {Σ} (A : Σ-Algebra Σ) (B : Σ-Algebra Σ) : Set (sucℓ ℓ) where
 
-  open Function using (flip; _∘_)
-  open Signature SΣ
+  open Signature Σ
+  open Function using (_∘_; flip)
 
-  module A = Σ-Algebra A
-  module B = Σ-Algebra B
+  private
+    module A = Σ-Algebra A
+    module B = Σ-Algebra B
 
   field
-    ρ      : ∀ {τ} → REL (A.₀ τ) (B.₀ τ) ℓ
+    ρ      : ∀ {τ} → REL (A.S τ) (B.S τ) ℓ
     ρ-homo :
       ∀ (f : 𝓕)
-      → {as : A.argTypes f}
-      → {bs : B.argTypes f}
-      → dzip ρ as bs
+      → {as : A.argType f}
+      → {bs : B.argType f}
+      → zip ρ as bs
       → ρ (A.F f as) (B.F f bs)
 
-  op : Σ-Homorel B A
-  op = record { ρ = flip ρ ; ρ-homo = λ f → ρ-homo f ∘ DVec.op }
+  op : Σ-Rel B A
+  op = record { ρ = flip ρ 
+              ; ρ-homo = λ f → ρ-homo f ∘ VecT.op
+              }
 
-record Σ-Homomorphism (SΣ : Signature) (A : Σ-Algebra SΣ) (B : Σ-Algebra SΣ) : Set ℓ′ where
+module Term (Σ : Signature) where
 
-  open Signature SΣ
+  open Signature Σ
 
-  module A = Σ-Algebra A
-  module B = Σ-Algebra B
+  Ctx : ℕ → Set ℓ
+  Ctx = Vec 𝓢
 
-  field
-    h      : ∀ {τ} → A.₀ τ → B.₀ τ
-    h-homo :
-      ∀ {f : 𝓕}
-      → {as : A.argTypes f}
-      → h (A.F f as) ≡ B.F f (dmap h as)
+  data _⊢_⟨_⟩ {n} Γ : 𝓢 → Size → Set ℓ where
+    var : (i : Fin n)
+        → Γ ⊢ lookup Γ i ⟨ ∞ ⟩
 
-module Terms (SΣ : Signature) where
-
-  open Signature SΣ
-
-  Ctx : Set ℓ
-  Ctx = ∃[ n ] Vector Σ n
-
-  _[_] : (Γ : Ctx) → Fin (fst Γ) → Σ
-  (_ , Γ) [ i ] = V.lookup Γ i
-
-  data _⊢_⟨_⟩ : Ctx → Σ → Size → Set ℓ where
-    var : ∀ {Γ}
-        → (i : Fin (fst Γ))
-          -------------------
-        → Γ ⊢ (Γ [ i ]) ⟨ ∞ ⟩
-    fun : ∀ {i Γ}
+    fun : ∀ {s}
         → (f : 𝓕)
-        → map (Γ ⊢_⟨ i ⟩) (args f)
-          ------------------------
-        → Γ ⊢ ret f ⟨ ↑ i ⟩
+        → mapT (Γ ⊢_⟨ s ⟩) (args f)
+        → Γ ⊢ ret f ⟨ ↑ s ⟩
 
-  #_ : ∀ {Γ} i → Γ ⊢ _ ⟨ ∞ ⟩
-  #_ = var
+  Subst : ∀ {n m} → Ctx n → Ctx m → Set ℓ
+  Subst Γ Δ = ∀ i → Δ ⊢ lookup Γ i ⟨ ∞ ⟩
 
-  _$_ : ∀ {i Γ} f → _ → Γ ⊢ _ ⟨ ↑ i ⟩
-  _$_ = fun
-
-  infix 30 #_
-  infix 27 _$_
-
-  _⊢_ : {i : Size} → Ctx → Σ → Set ℓ
-  _⊢_ {i} Γ τ = Γ ⊢ τ ⟨ i ⟩
-
-  Subst : Ctx → Ctx → Set ℓ
-  Subst Γ Δ = ∀ i → Δ ⊢ V.lookup (snd Γ) i
-
-  sub : ∀ {Γ Δ}
+  sub : ∀ {n m} {Γ : Ctx n} {Δ : Ctx m}
       → Subst Γ Δ
-        -------------------------------------
-      → (∀ {i A} → Γ ⊢ A ⟨ i ⟩ → Δ ⊢ A ⟨ i ⟩)
+      → (∀ {s A} → Γ ⊢ A ⟨ s ⟩ → Δ ⊢ A ⟨ s ⟩)
   sub σ (var x)   = σ x
-  sub σ (fun f x) = fun f (dmap (sub σ) x)
+  sub σ (fun f x) = fun f (map (sub σ) x)
 
-  id : ∀ {Γ} → Subst Γ Γ
+  id : ∀ {n} {Γ : Ctx n} → Subst Γ Γ
   id i = var i
 
-  _∘_ : ∀ {A B C} → Subst B C → Subst A B → Subst A C
+  _∘_ : ∀ {n m o} {A : Ctx n} {B : Ctx m} {C : Ctx o}
+      → Subst B C → Subst A B → Subst A C
   (f ∘ g) i = sub f (g i)
-
-  v0 : ∀ {n} {Γ : Vector Σ n} {τ} → (-, τ V.∷ Γ) ⊢ τ
-  v0 = # zero
-
-  v1 : ∀ {n} {Γ : Vector Σ n} {τ τ′} → (-, τ V.∷ τ′ V.∷ Γ) ⊢ τ′
-  v1 = # suc zero

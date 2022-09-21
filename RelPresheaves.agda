@@ -1,28 +1,20 @@
-{-# OPTIONS --sized-types #-}
-
 open import Categories.Category
 
 module RelPresheaves {co cℓ ce} (C : Category co cℓ ce) where
 
-open import Level
-open import Data.Product using (_,_)
-open import Relation.Binary.PropositionalEquality using (_≡_; refl; isEquivalence; sym; trans; cong; cong-app; cong₂)
-open import Relation.Binary
+import Data.Unit
+open import Data.Product using (_×_; _,_; proj₁; proj₂; <_,_>)
+open import Data.Unit.Polymorphic using (⊤)
+open import Function using (id; _∘_)
+open import Level using (Level; lift; _⊔_; lower) renaming (suc to sucℓ)
+open import Relation.Binary.PropositionalEquality using (_≡_; refl; sym; trans; cong; cong₂)
 
-import Data.Product.Relation.Binary.Pointwise.NonDependent
+pattern * = lift Data.Unit.tt
+
 open import Categories.Category.Cartesian
-open import Categories.Category.Construction.Functors
-open import Categories.Category.Construction.Presheaves
 open import Categories.Category.Instance.Rels
 open import Categories.Functor hiding (id)
-open import Categories.Functor.Properties
 open import Categories.Functor.Presheaf
-
-open import Function using (id; _∘_)
-open import Data.Product
-open import Data.Bool
-open import Data.Unit.Polymorphic renaming (⊤ to Unit)
-open import Utils
 
 private
   variable
@@ -30,39 +22,46 @@ private
     o′ ℓ′ : Level
     o″ ℓ″ : Level
 
-RelPresheaf : Set (suc co ⊔ suc cℓ ⊔ ce)
+RelPresheaf : Set (sucℓ co ⊔ sucℓ cℓ ⊔ ce)
 RelPresheaf = Presheaf C (Rels co cℓ)
 
-record RelPresheaf⇒ (X : RelPresheaf) (U : RelPresheaf) : Set (co ⊔ cℓ) where
+record RelPresheaf⇒ (X : RelPresheaf) (Y : RelPresheaf)
+                    : Set (co ⊔ cℓ) where
   eta-equality
   private
     module X = Functor X
-    module U = Functor U
+    module Y = Functor Y
   open Category C
 
   field
-    η : ∀ {σ} → X.₀ σ → U.₀ σ
-    imply : ∀ {σ τ t s} {f : C [ σ , τ ]}
+    η : ∀ {ω} → X.₀ ω → Y.₀ ω
+    imply : ∀ {ω₁ ω₂ t s} {f : C [ ω₁ , ω₂ ]}
             → X.₁ f    t     s
-            → U.₁ f (η t) (η s)
+            → Y.₁ f (η t) (η s)
 
 RelPresheaves : Category _ _ _
 RelPresheaves = record
   { Obj = RelPresheaf
   ; _⇒_ = RelPresheaf⇒
   ; _≈_ = λ F G →
+
           let module F = RelPresheaf⇒ F
               module G = RelPresheaf⇒ G in
-              ∀ {σ} x → F.η {σ} x ≡ G.η {σ} x
-  ; id = record { η     = id
-                ; imply = id
-                }
+
+      ∀ {ω} x → F.η {ω} x ≡ G.η {ω} x
+  ; id =
+    record { η      = id
+            ; imply = id
+            }
   ; _∘_ = λ F G →
+
           let module F = RelPresheaf⇒ F
               module G = RelPresheaf⇒ G in
-              record { η     = F.η ∘ G.η
-                     ; imply = F.imply ∘ G.imply
-                     }
+
+    record { η      = F.η ∘ G.η
+            ; imply = F.imply ∘ G.imply
+            }
+
   ; assoc = λ f → refl
   ; sym-assoc = λ f → refl
   ; identityˡ = λ f → refl
@@ -74,6 +73,7 @@ RelPresheaves = record
     ; trans = λ i≈j j≈k f → trans (i≈j f) (j≈k f)
     }
   ; ∘-resp-≈ = λ { {f = f} f≈h g≈i x → trans (cong (λ p → RelPresheaf⇒.η f p) (g≈i x)) (f≈h _) }
+
   }
 
 module IsCartesian where
@@ -82,14 +82,14 @@ module IsCartesian where
   RelPresheaves-Cartesian = record
     { terminal = record
       { ⊤ = record
-        { F₀ = λ σ → Unit
-        ; F₁ = λ f → λ { _ _ → Unit }
-        ; identity = (λ { ⊤ → lift refl }) , (λ { (lift refl) → ⊤ })
-        ; homomorphism = (λ { ⊤ → ⊤ , (⊤ , ⊤) }) , (λ { (⊤ , (⊤ , ⊤)) → ⊤ })
-        ; F-resp-≈ = λ f → (λ { ⊤ → ⊤ }), (λ { ⊤ → ⊤ })
+        { F₀ = λ σ → ⊤
+        ; F₁ = λ f → λ { _ _ → ⊤ }
+        ; identity = (λ { * → lift refl }) , (λ { (lift refl) → * })
+        ; homomorphism = (λ { * → * , (* , *) }) , (λ { (* , (* , *)) → * })
+        ; F-resp-≈ = λ f → (λ { * → * }), (λ { * → * })
         }
       ; ⊤-is-terminal = record
-        { ! = record { η = λ _ → ⊤ ; imply = λ _ → ⊤ }
+        { ! = record { η = λ _ → * ; imply = λ _ → * }
         ; !-unique = λ f x → refl
         }
       }
