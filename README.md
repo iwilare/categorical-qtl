@@ -6,7 +6,7 @@ We use the [agda-categories](https://github.com/agda/agda-categories) library as
 
 ## Positive normal form
 
-Some results on a positive normal form of this logic in the case of linear trace-like models can be found at [https://github.com/iwilare/qQLTL-pnf/](https://github.com/iwilare/qltl-pnf/).
+Some results on a positive normal form of this logic in the case of linear trace-like models can be found at [https://github.com/iwilare/qltl-pnf/](https://github.com/iwilare/qltl-pnf/).
 
 ## Requirements
 
