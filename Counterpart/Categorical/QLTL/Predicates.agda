@@ -1,6 +1,6 @@
 {-# OPTIONS --sized-types #-}
 
-module Counterpart.Categorical.LTL.Predicates where
+module Counterpart.Categorical.QLTL.Predicates where
 
 open import Data.Nat using (ℕ; _<_)
 open import Data.Product using (∃-syntax; _×_)
@@ -27,4 +27,3 @@ A weakUntil B = A until B ⊎ always A
 -- There exists a step after which A is satisfied
 eventually : ∀ {ℓ} (A : Pred ℕ ℓ) → Set ℓ
 eventually A = ∃[ i ] i ∈ A
-

@@ -3,7 +3,7 @@
 open import SortedAlgebra
 open import Counterpart.Categorical.TemporalModel
 
-module Counterpart.Categorical.LTL.Semantics {ℓ} {Σ : Signature {ℓ}}
+module Counterpart.Categorical.QLTL.Semantics {ℓ} {Σ : Signature {ℓ}}
                (M : TemporalCounterpartWModel Σ) where
 
 open import Data.Unit.Polymorphic using (⊤)
@@ -20,14 +20,14 @@ open import RelPresheaves
 
 open Signature Σ
 open SortedAlgebra.Term Σ
-open import LTL
+open import QLTL
 open Functor using (F₀)
 open TemporalCounterpartWModel M using (⟦_⟧*; ⟦_⟧ᵗ)
 open RelPresheaf⇒ using (η)
 
-open import Counterpart.Categorical.LTL.ClassicalAttributes M
+open import Counterpart.Categorical.QLTL.ClassicalAttributes M
 
-⟨_⟩ : ∀ {n} {Γ : Ctx n} → LTL Γ → ClassicalAttribute (⟦ Γ ⟧*)
+⟨_⟩ : ∀ {n} {Γ : Ctx n} → QLTL Γ → ClassicalAttribute (⟦ Γ ⟧*)
 ⟨ true         ⟩ a = ⊤
 ⟨ false        ⟩ a = ⊥
 ⟨ ! ϕ          ⟩ a = ¬ ⟨ ϕ ⟩ a
@@ -44,5 +44,5 @@ open import Counterpart.Categorical.LTL.ClassicalAttributes M
 ⟨ ϕ₁ W ϕ₂     ⟩ = XW (⟦ _ ⟧*) ⟨ ϕ₁ ⟩ ⟨ ϕ₂ ⟩
 ⟨ ϕ₁ T ϕ₂     ⟩ = XT (⟦ _ ⟧*) ⟨ ϕ₁ ⟩ ⟨ ϕ₂ ⟩
 
-DecidableFormula : ∀ {n} {Γ : Ctx n} → LTL Γ → Set ℓ
+DecidableFormula : ∀ {n} {Γ : Ctx n} → QLTL Γ → Set ℓ
 DecidableFormula {_} {Γ} ϕ = ∀ ω (a : F₀ (⟦ Γ ⟧*) ω) → Dec (a ∈ ⟨ ϕ ⟩)

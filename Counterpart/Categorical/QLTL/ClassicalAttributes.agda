@@ -3,7 +3,7 @@
 open import Counterpart.Categorical.TemporalModel using (TemporalCounterpartWModel)
 open import SortedAlgebra using (Signature)
 
-module Counterpart.Categorical.LTL.ClassicalAttributes {ℓ} {Σ : Signature {ℓ}} (M : TemporalCounterpartWModel Σ) where
+module Counterpart.Categorical.QLTL.ClassicalAttributes {ℓ} {Σ : Signature {ℓ}} (M : TemporalCounterpartWModel Σ) where
 
 open import Data.Nat using (ℕ)
 open import Level using (_⊔_) renaming (suc to sucℓ)
@@ -16,7 +16,7 @@ open import Counterpart.Categorical.TemporalStructure using (TemporalStructure)
 open import Categories.Functor using (Functor)
 open import RelPresheaves using (RelPresheaf)
 
-open import Counterpart.Categorical.LTL.Predicates
+open import Counterpart.Categorical.QLTL.Predicates
 
 module M = TemporalCounterpartWModel M
 

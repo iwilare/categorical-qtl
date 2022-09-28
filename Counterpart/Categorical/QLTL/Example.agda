@@ -3,7 +3,7 @@
 open import SortedAlgebra
 open import Counterpart.Categorical.TemporalModel
 
-module Counterpart.Categorical.LTL.Example where
+module Counterpart.Categorical.QLTL.Example where
 
 open import Data.Nat
 
@@ -167,7 +167,7 @@ f f₁ = F₁
 f f₂ = F₂
 f f₃ = F₃
 
-open import LTL
+open import QLTL
 open import Counterpart.Classical
 open import Counterpart.ClassicalToCategorical
 open import Counterpart.Categorical.TemporalStructure
@@ -180,9 +180,9 @@ TWM = ClassicalToCategorical M
 
 module TWM = TemporalCounterpartWModel TWM
 
-open import Counterpart.Categorical.LTL.Semantics TWM
+open import Counterpart.Categorical.QLTL.Semantics TWM
 open TemporalStructure TWM.T
-open Signature Gr 
+open Signature Gr
 open SortedAlgebra.Term Gr
 
 module ExampleFormulae where
@@ -200,31 +200,31 @@ module ExampleFormulae where
   v1 : ∀ {n} {Γ : Ctx (2 + n)} → Γ ⊢ _ ⟨ ∞ ⟩
   v1 = var (suc zero)
 
-  present : ∀ {τ} → LTL (τ ∷ [])
+  present : ∀ {τ} → QLTL (τ ∷ [])
   present {τ} = ∃< τ > v1 ≡ᵗ v0
 
-  notPresent : ∀ {τ} → LTL (τ ∷ [])
+  notPresent : ∀ {τ} → QLTL (τ ∷ [])
   notPresent {τ} = ∀< τ > v1 ≢ᵗ v0
 
-  nextStepPreserved : ∀ {τ} → LTL (τ ∷ [])
+  nextStepPreserved : ∀ {τ} → QLTL (τ ∷ [])
   nextStepPreserved = present ∧ O present
 
-  nextStepDeallocated : ∀ {τ} → LTL (τ ∷ [])
+  nextStepDeallocated : ∀ {τ} → QLTL (τ ∷ [])
   nextStepDeallocated = present ∧ A notPresent
 
-  loop : ∀ {n} {Γ : Ctx n} → LTL (Edge ∷ Γ)
+  loop : ∀ {n} {Γ : Ctx n} → QLTL (Edge ∷ Γ)
   loop = s $ (v0 , *) ≡ᵗ t $ (v0 , *)
 
-  hasLoop : LTL []
+  hasLoop : QLTL []
   hasLoop = ∃< Edge > loop
-  
-  nodeHasLoop : LTL (Node ∷ [])
+
+  nodeHasLoop : QLTL (Node ∷ [])
   nodeHasLoop = ∃< Edge > (s $ (v0 , *) ≡ᵗ v1 ∧ loop)
 
-  willBecomeLoop : LTL (Edge ∷ [])
+  willBecomeLoop : QLTL (Edge ∷ [])
   willBecomeLoop = ! loop ∧ ◇ loop
 
-  eventuallyNodeHasLoop : LTL (Node ∷ [])
+  eventuallyNodeHasLoop : QLTL (Node ∷ [])
   eventuallyNodeHasLoop = ◇ nodeHasLoop
 
 open ExampleFormulae
@@ -356,7 +356,7 @@ exampleWillBecomeLoop =
     ex4 (¬loop , ◇loop) with ◇loop path1
     ... | 0 , p , (e3 , *) , a , n3≡n4 = ⊥-elim (¬loop (sym n3≡n4))
     ... | 0 , p , (e4 , *) , a , n4≡n3 = ⊥-elim (¬loop n4≡n3)
-    
+
     ex5 : ⟨ ! willBecomeLoop ⟩ {ω₂} (e5 , *)
     ex5 (¬loop , _) = ¬loop refl
 
